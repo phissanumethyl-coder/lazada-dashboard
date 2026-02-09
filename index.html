@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lazada Financial Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: linear-gradient(180deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);
+  color: #f0f0f0;
+  font-family: 'Noto Sans Thai', sans-serif;
+  min-height: 100vh;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
+input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+@keyframes slideDown { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 2000px; } }
+.slide-down { animation: slideDown 0.4s ease forwards; overflow: hidden; }
+.card-hover:hover { background: rgba(255,255,255,0.05) !important; border-color: rgba(124,58,237,0.3) !important; }
+table { border-collapse: collapse; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useCallback } = React;
+const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid } = Recharts;
+
+const INITIAL_SHOPS = [
+  {
+    id: 1, name: "บ้านม่านไทย", storeId: "TH1JHSTHN9", period: "01/2026", salesPerson: "",
+    sales: 223587.69, returns: -6400,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -25484.95,
+      "ค่าธรรมเนียมการชำระเงิน": -7263.83,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -3804.10,
+      "คืนค่าธรรมเนียมการชำระเงิน": 204.08,
+      "คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": 2.26,
+      "คืนส่วนลดค่าธรรมเนียมการขายสินค้า": 719.04,
+      "ส่วนต่างค่าจัดส่ง": -115.00,
+      "ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า": -410.00,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -1005.00,
+      "Premium Package": -9352.39,
+      "ส่วนลด LazCoins": -2182.41,
+      "Reversal Promotional Charges Flexi-Combo": 15.00,
+      "Reverse - Premium Package": 263.92,
+      "คืนค่าส่วนลด LazCoins": 189.90,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -1889.48,
+      "คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า": 30.00,
+      "ค่าบริการโปรโมทสินค้า": -4392.12,
+    },
+    totalReceived: 162712.61,
+  },
+  {
+    id: 2, name: "Piramid Shop", storeId: "TH1JHS2GMI", period: "01/2026", salesPerson: "",
+    sales: 182609.00, returns: -4334.00,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -20766.82,
+      "ค่าธรรมเนียมการชำระเงิน": -5978.69,
+      "Campaign Fee": -1985.93,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -2685.76,
+      "Reversal Campaign Fee": 131.71,
+      "คืนส่วนลดค่าธรรมเนียมการขายสินค้า": 482.85,
+      "ส่วนต่างค่าจัดส่ง": -40.00,
+      "ค่าขนส่งการคืนสินค้า": -256.00,
+      "หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)": -76.00,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -1234.00,
+      "ส่วนลด LazCoins": -2031.36,
+      "Reversal Promotional Charges Flexi-Combo": 29.00,
+      "คืนค่าส่วนลด LazCoins": 130.02,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -1285.00,
+      "คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า": 35.00,
+      "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า": -4683.41,
+      "คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า": 177.21,
+      "ค่าบริการโปรโมทสินค้า": -2561.95,
+    },
+    totalReceived: 135675.87,
+  },
+  {
+    id: 3, name: "ผ้าม่านคุณภาพดีราคาถูก", storeId: "TH1JHSIX8W", period: "01/2026", salesPerson: "",
+    sales: 43204.86, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -4998.41,
+      "ค่าธรรมเนียมการชำระเงิน": -1499.74,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -1014.35,
+      "Premium Package": -1834.24,
+      "ส่วนลด LazCoins": -348.16,
+    },
+    totalReceived: 33509.96,
+  },
+  {
+    id: 4, name: "YF Premium Curtain", storeId: "TH1JLD88VC", period: "01/2026", salesPerson: "",
+    sales: 41322.00, returns: -15005.00,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -4727.57,
+      "ค่าธรรมเนียมการชำระเงิน": -1303.22,
+      "คืนค่าธรรมเนียมการชำระเงิน": 128.09,
+      "คืนส่วนลดค่าธรรมเนียมการขายสินค้า": 1709.11,
+      "ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า": -1515.50,
+      "คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)": 200.63,
+      "ค่าขนส่งการคืนสินค้า": -268.00,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -787.09,
+      "คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า": 350.68,
+      "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า": -41.09,
+    },
+    totalReceived: 20063.04,
+  },
+  {
+    id: 5, name: "บุษบา ผ้าม่าน", storeId: "TH1JL6W7K3", period: "01/2026", salesPerson: "",
+    sales: 27885.14, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -3132.97,
+      "ค่าธรรมเนียมการชำระเงิน": -895.54,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -621.50,
+      "ส่วนต่างค่าจัดส่ง": -80.00,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -170.00,
+      "Premium Package": -1149.76,
+      "ส่วนลด LazCoins": -511.81,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -340.90,
+      "ค่าบริการโปรโมทสินค้า": -233.86,
+    },
+    totalReceived: 20748.80,
+  },
+  {
+    id: 6, name: "Meidea Center", storeId: "TH11HXN", period: "01/2026", salesPerson: "",
+    sales: 23641.00, returns: -1498.00,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -2658.20,
+      "ค่าธรรมเนียมการชำระเงิน": -764.28,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -325.03,
+      "คืนส่วนลดค่าธรรมเนียมการขายสินค้า": 172.72,
+      "ส่วนต่างค่าจัดส่ง": -15.00,
+      "ค่าขนส่งการคืนสินค้า": -104.00,
+      "หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)": -100.00,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -704.49,
+      "ส่วนลด LazCoins": -103.40,
+      "Reversal Promotional Charges Flexi-Combo": 5.00,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -42.00,
+      "คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า": 12.00,
+      "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า": -975.49,
+      "คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า": 63.38,
+      "ค่าบริการโปรโมทสินค้า": -565.24,
+    },
+    totalReceived: 16038.97,
+  },
+  {
+    id: 7, name: "เมษา ผ้าม่าน", storeId: "TH1JL6UPD3", period: "01/2026", salesPerson: "",
+    sales: 17926.36, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -2005.93,
+      "ค่าธรรมเนียมการชำระเงิน": -591.64,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -122.84,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -140.00,
+      "Premium Package": -736.12,
+      "ส่วนลด LazCoins": -342.86,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -244.41,
+      "ค่าบริการโปรโมทสินค้า": -434.83,
+    },
+    totalReceived: 13307.73,
+  },
+  {
+    id: 8, name: "Dream Curtains", storeId: "TH1JHRYX94", period: "01/2026", salesPerson: "",
+    sales: 9841.66, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -1130.24,
+      "ค่าธรรมเนียมการชำระเงิน": -338.45,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -357.06,
+      "Premium Package": -414.75,
+      "ส่วนลด LazCoins": -150.90,
+      "ค่าบริการโปรโมทสินค้า": -299.87,
+    },
+    totalReceived: 7150.39,
+  },
+  {
+    id: 9, name: "ม่านดีมีดีไซน์", storeId: "TH1JHSJ4KR", period: "01/2026", salesPerson: "",
+    sales: 3350.00, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -390.72,
+      "ค่าธรรมเนียมการชำระเงิน": -113.67,
+      "Premium Package": -143.37,
+    },
+    totalReceived: 2702.24,
+  },
+  {
+    id: 10, name: "Cozy9", storeId: "TH1JM3GXYS", period: "01/2026", salesPerson: "",
+    sales: 2317.00, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -270.22,
+      "ค่าธรรมเนียมการชำระเงิน": -82.01,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -123.96,
+      "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า": -99.17,
+    },
+    totalReceived: 1741.64,
+  },
+  {
+    id: 11, name: "YKCurtain Premium", storeId: "TH1JHSTSFU", period: "01/2026", salesPerson: "",
+    sales: 2026.00, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -214.14,
+      "ค่าธรรมเนียมการชำระเงิน": -62.30,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -60.78,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -129.00,
+      "ค่าบริการโปรโมทสินค้า": -294.70,
+    },
+    totalReceived: 1265.08,
+  },
+  {
+    id: 12, name: "พีเค ผ้าม่าน", storeId: "TH1JHRR9X7", period: "12/2025", salesPerson: "",
+    sales: 1538.00, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -170.50,
+      "ค่าธรรมเนียมการชำระเงิน": -49.08,
+      "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)": -15.00,
+      "Premium Package": -62.58,
+      "ส่วนลด LazCoins": -46.14,
+      "หักค่าคูปองส่งเสริมการขายจากผู้ขาย": -15.00,
+    },
+    totalReceived: 1179.70,
+  },
+  {
+    id: 13, name: "PK CURTAINS DESIGN", storeId: "TH1JI61K3W", period: "01/2026", salesPerson: "",
+    sales: 899.00, returns: 0,
+    fees: {
+      "หักค่าธรรมเนียมการขายสินค้า": -104.41,
+      "ค่าธรรมเนียมการชำระเงิน": -32.40,
+      "ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins": -44.03,
+      "Premium Package": -47.89,
+      "ส่วนลด LazCoins": -3.80,
+    },
+    totalReceived: 666.47,
+  },
+];
+
+const FEE_GROUPS = {
+  "ค่าธรรมเนียมจากลาซาด้า": [
+    "หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins",
+    "คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า",
+    "Campaign Fee","Reversal Campaign Fee",
+  ],
+  "ค่าบริการขนส่ง": [
+    "ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า",
+    "หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)",
+  ],
+  "ค่าธรรมเนียมด้านการตลาด": [
+    "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins",
+    "Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins",
+    "หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า",
+    "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า",
+  ],
+};
+
+const PIE_COLORS = ["#0f766e","#be185d","#7c3aed","#ea580c","#0369a1"];
+const fmt = (n) => n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtPct = (n) => n.toFixed(2) + "%";
+
+/* ───────── Shop Detail Card ───────── */
+function ShopCard({ shop, isExpanded, onToggle }) {
+  const totalFees = Object.values(shop.fees).reduce((a, b) => a + b, 0);
+  const totalDeductions = totalFees + (shop.returns || 0);
+  const pctDed = Math.abs(totalDeductions) / shop.sales * 100;
+  const pctRec = (shop.totalReceived / shop.sales) * 100;
+  const colorPct = pctDed > 30 ? "#f87171" : pctDed > 25 ? "#fbbf24" : "#34d399";
+
+  return (
+    <div className="card-hover fade-in" style={{
+      background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)",
+      borderRadius: 14, overflow: "hidden", transition: "all 0.3s ease", marginBottom: 10,
+    }}>
+      <div onClick={onToggle} style={{
+        padding: "16px 22px", cursor: "pointer", display: "flex", alignItems: "center",
+        justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+      }}>
+        <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#f0f0f0" }}>{shop.name}</span>
+            <span style={{ fontSize: 10, color: "#888", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: 4 }}>{shop.period}</span>
+          </div>
+          {shop.salesPerson && <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>ฝ่ายขาย: {shop.salesPerson}</div>}
+        </div>
+        <div style={{ textAlign: "right", minWidth: 120 }}>
+          <div style={{ fontSize: 10, color: "#888" }}>ยอดขาย</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#34d399", fontFamily: "'JetBrains Mono'" }}>฿{fmt(shop.sales)}</div>
+        </div>
+        <div style={{ textAlign: "right", minWidth: 110 }}>
+          <div style={{ fontSize: 10, color: "#888" }}>ได้รับจริง</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#60a5fa", fontFamily: "'JetBrains Mono'" }}>฿{fmt(shop.totalReceived)}</div>
+        </div>
+        <div style={{ textAlign: "right", minWidth: 65 }}>
+          <div style={{ fontSize: 10, color: "#888" }}>หัก %</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: colorPct, fontFamily: "'JetBrains Mono'" }}>{fmtPct(pctDed)}</div>
+        </div>
+        <div style={{ fontSize: 16, color: "#555", transform: isExpanded ? "rotate(180deg)" : "", transition: "transform 0.3s" }}>▼</div>
+      </div>
+
+      {isExpanded && (
+        <div className="slide-down" style={{ padding: "0 22px 20px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ paddingTop: 14 }}>
+            <div style={{ fontSize: 11, color: "#666", marginBottom: 6 }}>รหัสร้านค้า: {shop.storeId}</div>
+
+            {shop.returns !== 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.03)", color: "#f87171", fontSize: 13 }}>
+                <span>หักเงินค่าสินค้า (คืนสินค้า)</span>
+                <span style={{ fontFamily: "'JetBrains Mono'" }}>฿{fmt(shop.returns)} ({fmtPct(Math.abs(shop.returns) / shop.sales * 100)})</span>
+              </div>
+            )}
+
+            {Object.entries(FEE_GROUPS).map(([gn, fks]) => {
+              const items = fks.filter(k => shop.fees[k] !== undefined);
+              if (!items.length) return null;
+              const gt = items.reduce((a, k) => a + shop.fees[k], 0);
+              return (
+                <div key={gn} style={{ marginTop: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#a78bfa", marginBottom: 4 }}>{gn}</div>
+                  {items.map(k => (
+                    <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0 4px 14px", fontSize: 12, borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
+                      <span style={{ color: "#bbb" }}>{k}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono'", color: shop.fees[k] >= 0 ? "#34d399" : "#f87171" }}>
+                        ฿{fmt(shop.fees[k])} ({fmtPct(Math.abs(shop.fees[k]) / shop.sales * 100)})
+                      </span>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0 5px 14px", fontSize: 12, fontWeight: 600, color: gt >= 0 ? "#34d399" : "#fbbf24" }}>
+                    <span>รวม {gn}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono'" }}>฿{fmt(gt)} ({fmtPct(Math.abs(gt) / shop.sales * 100)})</span>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(99,102,241,0.1)", borderRadius: 10, display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 14 }}>
+              <span style={{ color: "#c4b5fd" }}>รวมค่าใช้จ่ายทั้งหมด</span>
+              <span style={{ color: "#f87171", fontFamily: "'JetBrains Mono'" }}>฿{fmt(Math.abs(totalDeductions))} ({fmtPct(pctDed)})</span>
+            </div>
+            <div style={{ marginTop: 6, padding: "10px 14px", background: "rgba(52,211,153,0.1)", borderRadius: 10, display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 14 }}>
+              <span style={{ color: "#6ee7b7" }}>เงินที่ได้รับจริง</span>
+              <span style={{ color: "#34d399", fontFamily: "'JetBrains Mono'" }}>฿{fmt(shop.totalReceived)} ({fmtPct(pctRec)})</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ───────── Add Shop Form ───────── */
+function AddShopForm({ onAdd, onCancel }) {
+  const [f, setF] = useState({ name: "", storeId: "", period: "", salesPerson: "", sales: "", returns: "" });
+  const [enabledFees, setEnabledFees] = useState({});
+  const [feeVals, setFeeVals] = useState({});
+  const up = (k, v) => setF(p => ({ ...p, [k]: v }));
+
+  const allFees = Object.values(FEE_GROUPS).flat();
+
+  const handleSubmit = () => {
+    if (!f.name || !f.sales) return;
+    const fees = {};
+    Object.keys(enabledFees).forEach(k => { if (enabledFees[k] && feeVals[k]) fees[k] = parseFloat(feeVals[k]) || 0; });
+    const sn = parseFloat(f.sales) || 0;
+    const rn = parseFloat(f.returns) || 0;
+    const tf = Object.values(fees).reduce((a, b) => a + b, 0);
+    onAdd({ id: Date.now(), name: f.name, storeId: f.storeId, period: f.period, salesPerson: f.salesPerson, sales: sn, returns: rn, fees, totalReceived: sn + rn + tf });
+  };
+
+  const is = { width: "100%", padding: "9px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#f0f0f0", fontSize: 13, outline: "none", fontFamily: "'Noto Sans Thai'" };
+
+  return (
+    <div className="fade-in" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(124,58,237,0.25)", borderRadius: 14, padding: 24, marginBottom: 20 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#c4b5fd", marginBottom: 20 }}>➕ เพิ่มข้อมูลร้านใหม่</h3>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 18 }}>
+        {[["ชื่อร้าน *","name","ชื่อร้านค้า"],["รหัสร้านค้า","storeId","TH1XXXXX"],["งวด (เดือน/ปี)","period","01/2026"],["ชื่อฝ่ายขาย","salesPerson","ชื่อพนักงาน"]].map(([l,k,ph]) => (
+          <div key={k}><label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 3 }}>{l}</label><input style={is} value={f[k]} onChange={e => up(k, e.target.value)} placeholder={ph} /></div>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+        <div><label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 3 }}>ยอดรวมค่าสินค้า *</label><input style={is} type="number" value={f.sales} onChange={e => up("sales", e.target.value)} placeholder="0.00" /></div>
+        <div><label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 3 }}>คืนสินค้า (ใส่เป็นลบ)</label><input style={is} type="number" value={f.returns} onChange={e => up("returns", e.target.value)} placeholder="-0.00" /></div>
+      </div>
+
+      <h4 style={{ fontSize: 14, fontWeight: 600, color: "#a78bfa", marginBottom: 10 }}>ค่าใช้จ่าย — ติ๊กเลือกรายการที่ต้องการ</h4>
+      {Object.entries(FEE_GROUPS).map(([gn, fees]) => (
+        <div key={gn} style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#fbbf24", marginBottom: 6 }}>{gn}</div>
+          {fees.map(fee => (
+            <div key={fee} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, paddingLeft: 6, flexWrap: "wrap" }}>
+              <input type="checkbox" checked={!!enabledFees[fee]} onChange={() => setEnabledFees(p => ({ ...p, [fee]: !p[fee] }))} style={{ width: 16, height: 16, accentColor: "#7c3aed", cursor: "pointer" }} />
+              <span style={{ fontSize: 12, color: "#bbb", minWidth: 200, flex: "1 1 200px" }}>{fee}</span>
+              {enabledFees[fee] && <input type="number" style={{ ...is, width: 160, padding: "5px 10px", flex: "0 0 160px" }} value={feeVals[fee] || ""} onChange={e => setFeeVals(p => ({ ...p, [fee]: e.target.value }))} placeholder="จำนวนเงิน" />}
+              {enabledFees[fee] && f.sales && feeVals[fee] && (
+                <span style={{ fontSize: 11, color: "#60a5fa", fontFamily: "'JetBrains Mono'", minWidth: 60 }}>= {fmtPct(Math.abs(parseFloat(feeVals[fee]) || 0) / (parseFloat(f.sales) || 1) * 100)}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+
+      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+        <button onClick={handleSubmit} disabled={!f.name || !f.sales} style={{
+          padding: "10px 28px", background: f.name && f.sales ? "linear-gradient(135deg, #7c3aed, #6d28d9)" : "#333",
+          color: "#fff", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: f.name && f.sales ? "pointer" : "not-allowed",
+        }}>บันทึกข้อมูล</button>
+        <button onClick={onCancel} style={{ padding: "10px 28px", background: "rgba(255,255,255,0.06)", color: "#999", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>ยกเลิก</button>
+      </div>
+    </div>
+  );
+}
+
+/* ───────── Main Dashboard ───────── */
+function App() {
+  const [shops, setShops] = useState(INITIAL_SHOPS);
+  const [expanded, setExpanded] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [tab, setTab] = useState("overview");
+  const [sortBy, setSortBy] = useState("sales");
+
+  const sorted = useMemo(() => [...shops].sort((a, b) => {
+    if (sortBy === "sales") return b.sales - a.sales;
+    if (sortBy === "received") return b.totalReceived - a.totalReceived;
+    if (sortBy === "pct") return ((b.sales - b.totalReceived) / b.sales) - ((a.sales - a.totalReceived) / a.sales);
+    return b.sales - a.sales;
+  }), [shops, sortBy]);
+
+  const totals = useMemo(() => {
+    const ts = shops.reduce((a, s) => a + s.sales, 0);
+    const tr = shops.reduce((a, s) => a + s.totalReceived, 0);
+    return { ts, tr, td: ts - tr, pct: ((ts - tr) / ts) * 100 };
+  }, [shops]);
+
+  const barData = useMemo(() => sorted.map(s => ({
+    name: s.name.length > 10 ? s.name.slice(0, 10) + "…" : s.name,
+    ยอดขาย: s.sales, ได้รับจริง: s.totalReceived,
+  })), [sorted]);
+
+  const pieData = useMemo(() => {
+    const ct = {};
+    shops.forEach(s => {
+      Object.entries(FEE_GROUPS).forEach(([gn, fks]) => {
+        const gt = fks.reduce((a, k) => a + (s.fees[k] || 0), 0);
+        ct[gn] = (ct[gn] || 0) + gt;
+      });
+      if (s.returns) ct["คืนสินค้า"] = (ct["คืนสินค้า"] || 0) + s.returns;
+    });
+    return Object.entries(ct).filter(([, v]) => v < 0).map(([n, v]) => ({ name: n, value: Math.abs(v) })).sort((a, b) => b.value - a.value);
+  }, [shops]);
+
+  const pctData = useMemo(() => sorted.map(s => ({
+    name: s.name.length > 10 ? s.name.slice(0, 10) + "…" : s.name,
+    pct: parseFloat(((s.sales - s.totalReceived) / s.sales * 100).toFixed(2)),
+  })), [sorted]);
+
+  const addShop = (s) => { setShops(p => [...p, s]); setShowForm(false); };
+
+  const tabBtn = (id, icon, label) => (
+    <button onClick={() => setTab(id)} style={{
+      padding: "9px 20px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s",
+      background: tab === id ? "linear-gradient(135deg, #7c3aed, #6d28d9)" : "rgba(255,255,255,0.05)",
+      color: tab === id ? "#fff" : "#888",
+    }}>{icon} {label}</button>
+  );
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 16px" }}>
+
+      {/* Header */}
+      <div style={{ padding: "28px 0 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 28, fontWeight: 900, background: "linear-gradient(135deg, #c4b5fd, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>LAZADA</span>
+              <span style={{ fontSize: 24, fontWeight: 300, color: "#444" }}>|</span>
+              <span style={{ fontSize: 19, fontWeight: 600, color: "#ddd" }}>Financial Dashboard</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.15)", padding: "2px 8px", borderRadius: 12 }}>V1</span>
+            </div>
+            <div style={{ fontSize: 12, color: "#555", marginTop: 3 }}>รายงานการเงินทุกร้านค้า — {shops.length} ร้าน</div>
+          </div>
+          <button onClick={() => setShowForm(!showForm)} style={{
+            padding: "10px 24px", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
+            background: showForm ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg, #7c3aed, #6d28d9)",
+            color: showForm ? "#f87171" : "#fff", transition: "all 0.2s",
+          }}>{showForm ? "✕ ปิดฟอร์ม" : "➕ เพิ่มร้านใหม่"}</button>
+        </div>
+      </div>
+
+      {showForm && <AddShopForm onAdd={addShop} onCancel={() => setShowForm(false)} />}
+
+      {/* Summary Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 24 }}>
+        {[
+          { l: "ยอดขายรวม", v: `฿${fmt(totals.ts)}`, c: "#34d399", bg: "rgba(52,211,153,0.07)" },
+          { l: "ได้รับจริงรวม", v: `฿${fmt(totals.tr)}`, c: "#60a5fa", bg: "rgba(96,165,250,0.07)" },
+          { l: "ค่าใช้จ่ายรวม", v: `฿${fmt(totals.td)}`, c: "#f87171", bg: "rgba(248,113,113,0.07)" },
+          { l: "% ถูกหักเฉลี่ย", v: fmtPct(totals.pct), c: "#fbbf24", bg: "rgba(251,191,36,0.07)" },
+        ].map((c, i) => (
+          <div key={i} className="fade-in" style={{ background: c.bg, border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: "16px 20px", animationDelay: i * 0.1 + "s" }}>
+            <div style={{ fontSize: 11, color: "#888", marginBottom: 6 }}>{c.l}</div>
+            <div style={{ fontSize: 21, fontWeight: 700, color: c.c, fontFamily: "'JetBrains Mono'" }}>{c.v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+        {tabBtn("overview", "📊", "ภาพรวม")}
+        {tabBtn("detail", "📋", "รายละเอียด")}
+        {tabBtn("compare", "⚖️", "เปรียบเทียบ")}
+      </div>
+
+      {/* ─── Overview Tab ─── */}
+      {tab === "overview" && (
+        <div className="fade-in">
+          <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: 16, marginBottom: 20 }}>
+            <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: "#ddd", marginBottom: 16 }}>ยอดขาย vs เงินที่ได้รับ</h3>
+              <ResponsiveContainer width="100%" height={380}>
+                <BarChart data={barData} margin={{ left: 10, right: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                  <XAxis dataKey="name" tick={{ fill: "#888", fontSize: 9 }} angle={-45} textAnchor="end" height={75} />
+                  <YAxis tick={{ fill: "#888", fontSize: 10 }} tickFormatter={v => (v / 1000).toFixed(0) + "K"} />
+                  <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }} formatter={v => [`฿${fmt(v)}`]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="ยอดขาย" fill="#34d399" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="ได้รับจริง" fill="#60a5fa" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: "#ddd", marginBottom: 16 }}>สัดส่วนค่าใช้จ่ายรวมทุกร้าน</h3>
+              <ResponsiveContainer width="100%" height={380}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="45%" outerRadius={110} innerRadius={55} dataKey="value" paddingAngle={2}>
+                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }} formatter={v => [`฿${fmt(v)}`]} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Ranking Table */}
+          <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20, overflowX: "auto" }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: "#ddd", marginBottom: 14 }}>🏆 อันดับร้านค้า</h3>
+            <table style={{ width: "100%", fontSize: 12 }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  {["#","ร้านค้า","งวด","ยอดขาย","ค่าใช้จ่าย","ได้รับจริง","% หัก","% ได้รับ"].map((h, i) => (
+                    <th key={i} style={{ padding: "8px 10px", textAlign: i > 2 ? "right" : "left", color: "#888", fontWeight: 600 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((s, i) => {
+                  const d = s.sales - s.totalReceived;
+                  const pd = (d / s.sales) * 100;
+                  const pr = (s.totalReceived / s.sales) * 100;
+                  return (
+                    <tr key={s.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", background: i % 2 ? "rgba(255,255,255,0.012)" : "transparent" }}>
+                      <td style={{ padding: "8px 10px", color: "#555" }}>{i + 1}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 600, color: "#ddd" }}>{s.name}</td>
+                      <td style={{ padding: "8px 10px", color: "#777" }}>{s.period}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: "#34d399" }}>฿{fmt(s.sales)}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: "#f87171" }}>฿{fmt(d)}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: "#60a5fa" }}>฿{fmt(s.totalReceived)}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: pd > 30 ? "#f87171" : pd > 25 ? "#fbbf24" : "#34d399" }}>{fmtPct(pd)}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: "#60a5fa" }}>{fmtPct(pr)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Detail Tab ─── */}
+      {tab === "detail" && (
+        <div className="fade-in">
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ color: "#888", fontSize: 12 }}>เรียงตาม:</span>
+            {[["sales","ยอดขาย"],["received","ได้รับจริง"],["pct","% หักมากสุด"]].map(([k, l]) => (
+              <button key={k} onClick={() => setSortBy(k)} style={{
+                padding: "5px 14px", borderRadius: 6, border: "none", fontSize: 11, cursor: "pointer",
+                background: sortBy === k ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.04)",
+                color: sortBy === k ? "#c4b5fd" : "#888",
+              }}>{l}</button>
+            ))}
+          </div>
+          {sorted.map(s => <ShopCard key={s.id} shop={s} isExpanded={expanded === s.id} onToggle={() => setExpanded(expanded === s.id ? null : s.id)} />)}
+        </div>
+      )}
+
+      {/* ─── Compare Tab ─── */}
+      {tab === "compare" && (
+        <div className="fade-in">
+          <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: "#ddd", marginBottom: 16 }}>เปรียบเทียบ % ค่าใช้จ่ายแต่ละร้าน</h3>
+            <ResponsiveContainer width="100%" height={420}>
+              <BarChart data={pctData} layout="vertical" margin={{ left: 100, right: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis type="number" tick={{ fill: "#888", fontSize: 10 }} tickFormatter={v => v + "%"} />
+                <YAxis dataKey="name" type="category" tick={{ fill: "#bbb", fontSize: 10 }} width={95} />
+                <Tooltip contentStyle={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }} formatter={v => [v + "%", "% หัก"]} />
+                <Bar dataKey="pct" radius={[0, 5, 5, 0]}>
+                  {pctData.map((e, i) => <Cell key={i} fill={e.pct > 30 ? "#f87171" : e.pct > 25 ? "#fbbf24" : "#34d399"} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20, overflowX: "auto" }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: "#ddd", marginBottom: 14 }}>เปรียบเทียบ % ค่าใช้จ่ายตามประเภท</h3>
+            <table style={{ width: "100%", fontSize: 11, minWidth: 700 }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  <th style={{ padding: "7px 8px", textAlign: "left", color: "#888", fontWeight: 600, position: "sticky", left: 0, background: "#0c0c14", minWidth: 110, zIndex: 1 }}>ร้านค้า</th>
+                  {Object.keys(FEE_GROUPS).map(g => <th key={g} style={{ padding: "7px 8px", textAlign: "right", color: "#a78bfa", fontWeight: 600, minWidth: 90 }}>{g}</th>)}
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#f87171", fontWeight: 600 }}>คืนสินค้า</th>
+                  <th style={{ padding: "7px 8px", textAlign: "right", color: "#fbbf24", fontWeight: 700 }}>รวม %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((s, i) => {
+                  const gps = Object.entries(FEE_GROUPS).map(([, fks]) => Math.abs(fks.reduce((a, k) => a + (s.fees[k] || 0), 0)) / s.sales * 100);
+                  const rp = Math.abs(s.returns || 0) / s.sales * 100;
+                  const tp = (s.sales - s.totalReceived) / s.sales * 100;
+                  return (
+                    <tr key={s.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", background: i % 2 ? "rgba(255,255,255,0.012)" : "transparent" }}>
+                      <td style={{ padding: "7px 8px", fontWeight: 600, color: "#ddd", position: "sticky", left: 0, background: i % 2 ? "#0d0d18" : "#0c0c14", zIndex: 1 }}>{s.name}</td>
+                      {gps.map((p, j) => <td key={j} style={{ padding: "7px 8px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: p > 15 ? "#f87171" : p > 10 ? "#fbbf24" : "#34d399" }}>{fmtPct(p)}</td>)}
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontFamily: "'JetBrains Mono'", color: rp > 0 ? "#f87171" : "#555" }}>{fmtPct(rp)}</td>
+                      <td style={{ padding: "7px 8px", textAlign: "right", fontFamily: "'JetBrains Mono'", fontWeight: 700, color: tp > 30 ? "#f87171" : tp > 25 ? "#fbbf24" : "#34d399" }}>{fmtPct(tp)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={{ marginTop: 40, padding: "20px 0 40px", borderTop: "1px solid rgba(255,255,255,0.04)", textAlign: "center" }}>
+        <span style={{ fontSize: 11, color: "#444" }}>Lazada Financial Dashboard V1 — พร้อมรองรับ Shopee ใน V2</span>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

@@ -160,8 +160,8 @@ body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--b
   <!-- Overview -->
   <div class="tab-content active" id="tab-overview">
     <div class="chart-grid">
-      <div class="chart-box"><h3>ยอดขาย vs เงินที่ได้รับ</h3><canvas id="barChart"></canvas></div>
-      <div class="chart-box"><h3>สัดส่วนค่าใช้จ่ายรวมทุกร้าน</h3><canvas id="pieChart"></canvas></div>
+      <div class="chart-box"><h3>ยอดขาย vs เงินที่ได้รับ</h3><div style="position:relative;height:380px;"><canvas id="barChart"></canvas></div></div>
+      <div class="chart-box"><h3>สัดส่วนค่าใช้จ่ายรวมทุกร้าน</h3><div style="position:relative;height:380px;"><canvas id="pieChart"></canvas></div></div>
     </div>
     <div class="chart-box"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto;" id="rankingTable"></div></div>
   </div>
@@ -179,7 +179,7 @@ body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--b
 
   <!-- Compare -->
   <div class="tab-content" id="tab-compare">
-    <div class="chart-box" style="margin-bottom:16px;"><h3>เปรียบเทียบ % ค่าใช้จ่ายแต่ละร้าน</h3><canvas id="compareChart"></canvas></div>
+    <div class="chart-box" style="margin-bottom:16px;"><h3>เปรียบเทียบ % ค่าใช้จ่ายแต่ละร้าน</h3><div style="position:relative;height:450px;"><canvas id="compareChart"></canvas></div></div>
     <div class="chart-box"><h3>เปรียบเทียบ % ค่าใช้จ่ายตามประเภท</h3><div style="overflow-x:auto;" id="compareTable"></div></div>
   </div>
 
@@ -239,6 +239,10 @@ let currentSort = "sales";
 let barChartInstance = null;
 let pieChartInstance = null;
 let compareChartInstance = null;
+
+// Prevent Chart.js infinite resize
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
 
 /* ═══════════ HELPERS ═══════════ */
 const fmt = n => n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

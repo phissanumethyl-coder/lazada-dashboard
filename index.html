@@ -1,592 +1,206 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Lazada Financial Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Financial Dashboard V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg: #0a0a0f; --bg2: #0f0f1a; --card: rgba(255,255,255,0.025);
-  --border: rgba(255,255,255,0.07); --text: #f0f0f0; --text2: #bbb; --text3: #888; --text4: #555;
-  --green: #34d399; --blue: #60a5fa; --red: #f87171; --yellow: #fbbf24;
-  --purple: #7c3aed; --purple-light: #c4b5fd; --purple-bg: rgba(124,58,237,0.15);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); color: var(--text); font-family: 'Noto Sans Thai', sans-serif; min-height: 100vh; }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
-.mono { font-family: 'JetBrains Mono', monospace; }
-.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
-
-/* Header */
-.header { padding: 28px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.header-title { font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #c4b5fd, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.header-sub { font-size: 19px; font-weight: 600; color: #ddd; }
-.badge { font-size: 10px; font-weight: 700; color: var(--purple); background: var(--purple-bg); padding: 2px 8px; border-radius: 12px; }
-
-/* Buttons */
-.btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; transition: all 0.2s; }
-.btn-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; }
-.btn-primary:hover { filter: brightness(1.15); }
-.btn-danger { background: rgba(239,68,68,0.2); color: #f87171; }
-.btn-ghost { background: rgba(255,255,255,0.05); color: var(--text3); border: 1px solid var(--border); }
-.btn-sm { padding: 5px 14px; font-size: 11px; border-radius: 6px; }
-.btn-tab { padding: 9px 20px; border-radius: 8px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: rgba(255,255,255,0.05); color: var(--text3); font-family: 'Noto Sans Thai', sans-serif; }
-.btn-tab.active { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; }
-
-/* Cards */
-.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
-.summary-card .label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
-.summary-card .value { font-size: 21px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-
-/* Tabs */
-.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn 0.4s ease; }
-
-/* Chart containers */
-.chart-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 20px; }
-@media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
-.chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
-.chart-box h3 { font-size: 15px; font-weight: 600; color: #ddd; margin-bottom: 16px; }
-
-/* Table */
-.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.data-table th { padding: 8px 10px; text-align: left; color: var(--text3); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.data-table th.right, .data-table td.right { text-align: right; }
-.data-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-.data-table tr:nth-child(even) { background: rgba(255,255,255,0.012); }
-
-/* Shop cards */
-.shop-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 10px; transition: all 0.3s ease; }
-.shop-card:hover { border-color: rgba(124,58,237,0.25); }
-.shop-header { padding: 16px 22px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.shop-header:hover { background: rgba(255,255,255,0.03); }
-.shop-detail { padding: 0 22px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: none; }
-.shop-detail.open { display: block; animation: slideDown 0.3s ease; }
-.fee-group-title { font-size: 12px; font-weight: 600; color: #a78bfa; margin: 10px 0 4px; }
-.fee-row { display: flex; justify-content: space-between; padding: 4px 0 4px 14px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.02); }
-.fee-total { display: flex; justify-content: space-between; padding: 5px 0 5px 14px; font-size: 12px; font-weight: 600; }
-.summary-box { margin-top: 14px; padding: 10px 14px; border-radius: 10px; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; }
-
-/* Form */
-.form-container { background: var(--card); border: 1px solid rgba(124,58,237,0.25); border-radius: 14px; padding: 24px; margin-bottom: 20px; display: none; }
-.form-container.open { display: block; animation: fadeIn 0.3s ease; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
-.form-group label { font-size: 11px; color: var(--text3); display: block; margin-bottom: 3px; }
-.form-input { width: 100%; padding: 9px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text); font-size: 13px; outline: none; font-family: 'Noto Sans Thai', sans-serif; }
-.form-input:focus { border-color: rgba(124,58,237,0.5); }
-.fee-check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; padding-left: 6px; flex-wrap: wrap; }
-.fee-check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--purple); cursor: pointer; }
-.fee-check-row .fee-label { font-size: 12px; color: var(--text2); min-width: 200px; flex: 1 1 200px; }
-.fee-check-row .fee-input { width: 160px; padding: 5px 10px; flex: 0 0 160px; }
-.fee-check-row .fee-pct { font-size: 11px; color: var(--blue); font-family: 'JetBrains Mono', monospace; min-width: 60px; }
-.fee-group-header { font-size: 12px; font-weight: 600; color: var(--yellow); margin-bottom: 6px; }
-
-.arrow { font-size: 16px; color: #555; transition: transform 0.3s; display: inline-block; }
-.arrow.open { transform: rotate(180deg); }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideDown { from { opacity: 0; } to { opacity: 1; } }
-
-.color-green { color: var(--green); }
-.color-blue { color: var(--blue); }
-.color-red { color: var(--red); }
-.color-yellow { color: var(--yellow); }
-.color-purple { color: var(--purple-light); }
-
-.footer { margin-top: 40px; padding: 20px 0 40px; border-top: 1px solid rgba(255,255,255,0.04); text-align: center; font-size: 11px; color: var(--text4); }
-
-/* Compare table */
-.compare-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 700px; }
-.compare-table th { padding: 7px 8px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.compare-table td { padding: 7px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-.compare-table tr:nth-child(even) { background: rgba(255,255,255,0.012); }
-.compare-table .sticky { position: sticky; left: 0; z-index: 1; }
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0f;color:#f0f0f0;font-family:'Noto Sans Thai',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:3px}
+.mono{font-family:'JetBrains Mono',monospace}.ctr{max-width:1200px;margin:0 auto;padding:0 16px}
+.pbar{display:flex;justify-content:center;gap:0;padding:16px 0 0;position:sticky;top:0;z-index:100;background:#0a0a0f}
+.pbtn{padding:12px 40px;font-size:15px;font-weight:700;border:none;cursor:pointer;border-bottom:3px solid transparent;background:transparent;color:#555;font-family:'Noto Sans Thai',sans-serif;transition:all 0.2s}
+.pbtn:hover{background:rgba(255,255,255,0.03)}.pbtn.alaz{color:#7c3aed;border-color:#7c3aed;background:rgba(124,58,237,0.06)}.pbtn.asp{color:#ee4d2d;border-color:#ee4d2d;background:rgba(238,77,45,0.06)}
+.hdr{padding:20px 0 16px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;transition:all 0.2s}
+.bsm{padding:5px 14px;font-size:11px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;background:rgba(255,255,255,0.04);color:#888}.bsm.act{background:rgba(124,58,237,0.25);color:#c4b5fd}
+.btab{padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.05);color:#888;font-family:'Noto Sans Thai',sans-serif;transition:all 0.2s}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.sc{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px}
+.sc .lb{font-size:11px;color:#888;margin-bottom:6px}.sc .vl{font-size:21px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.tc{display:none}.tc.act{display:block;animation:fi 0.4s ease}
+.cg{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:20px}@media(max-width:768px){.cg{grid-template-columns:1fr}}
+.cb{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px}.cb h3{font-size:15px;font-weight:600;color:#ddd;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12px}th{padding:8px 10px;text-align:left;color:#888;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.08)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}tr:nth-child(even){background:rgba(255,255,255,0.012)}.rt{text-align:right}
+.sk{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;margin-bottom:10px;transition:all 0.3s}
+.sk:hover{border-color:rgba(255,255,255,0.15)}.sh{padding:16px 22px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.sh:hover{background:rgba(255,255,255,0.03)}
+.sd{padding:0 22px 20px;border-top:1px solid rgba(255,255,255,0.05);display:none}.sd.op{display:block;animation:fi 0.3s ease}
+.fr{display:flex;justify-content:space-between;padding:4px 0 4px 14px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.02)}
+.ft{display:flex;justify-content:space-between;padding:5px 0 5px 14px;font-size:12px;font-weight:600}
+.sb{margin-top:8px;padding:10px 14px;border-radius:10px;display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.fm{background:rgba(255,255,255,0.025);border-radius:14px;padding:24px;margin-bottom:20px;display:none}.fm.op{display:block;animation:fi 0.3s ease}
+.fi{width:100%;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f0f0f0;font-size:13px;outline:none;font-family:'Noto Sans Thai',sans-serif}.fi:focus{border-color:rgba(124,58,237,0.5)}
+.fcr{display:flex;align-items:center;gap:8px;margin-bottom:5px;padding-left:6px;flex-wrap:wrap}
+.fcr input[type=checkbox]{width:16px;height:16px;cursor:pointer}.fcr .fl{font-size:12px;color:#bbb;min-width:200px;flex:1 1 200px}
+.ar{font-size:16px;color:#555;transition:transform 0.3s;display:inline-block}.ar.op{transform:rotate(180deg)}
+.ps{display:none}.ps.act{display:block}
+.ftr{margin-top:40px;padding:20px 0 40px;border-top:1px solid rgba(255,255,255,0.04);text-align:center;font-size:11px;color:#555}
+.cg{color:#34d399}.cb2{color:#60a5fa}.cr{color:#f87171}.cy{color:#fbbf24}.cp{color:#c4b5fd}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-
-<div class="container">
-  <!-- Header -->
-  <div class="header">
-    <div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span class="header-title">LAZADA</span>
-        <span style="font-size:24px;font-weight:300;color:#444">|</span>
-        <span class="header-sub">Financial Dashboard</span>
-        <span class="badge">V1</span>
-      </div>
-      <div style="font-size:12px;color:#555;margin-top:3px;" id="shopCount"></div>
-    </div>
-    <button class="btn btn-primary" id="toggleFormBtn" onclick="toggleForm()">➕ เพิ่มร้านใหม่</button>
-  </div>
-
-  <!-- Add Form -->
-  <div class="form-container" id="addForm">
-    <h3 style="font-size:18px;font-weight:700;color:#c4b5fd;margin-bottom:20px;">➕ เพิ่มข้อมูลร้านใหม่</h3>
-    <div class="form-grid">
-      <div class="form-group"><label>ชื่อร้าน *</label><input class="form-input" id="f_name" placeholder="ชื่อร้านค้า" /></div>
-      <div class="form-group"><label>รหัสร้านค้า</label><input class="form-input" id="f_storeId" placeholder="TH1XXXXX" /></div>
-      <div class="form-group"><label>งวด (เดือน/ปี)</label><input class="form-input" id="f_period" placeholder="01/2026" /></div>
-      <div class="form-group"><label>ชื่อฝ่ายขาย</label><input class="form-input" id="f_salesPerson" placeholder="ชื่อพนักงาน" /></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
-      <div class="form-group"><label>ยอดรวมค่าสินค้า (บาท) *</label><input class="form-input" type="number" id="f_sales" placeholder="0.00" oninput="updateFormPcts()" /></div>
-      <div class="form-group"><label>คืนสินค้า (ใส่เป็นลบ)</label><input class="form-input" type="number" id="f_returns" placeholder="-0.00" /></div>
-    </div>
-    <h4 style="font-size:14px;font-weight:600;color:#a78bfa;margin-bottom:10px;">ค่าใช้จ่าย — ติ๊กเลือกรายการที่ต้องการ</h4>
-    <div id="feeCheckboxes"></div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button class="btn btn-primary" onclick="submitForm()">บันทึกข้อมูล</button>
-      <button class="btn btn-ghost" onclick="toggleForm()">ยกเลิก</button>
-    </div>
-  </div>
-
-  <!-- Summary Cards -->
-  <div class="summary-grid" id="summaryCards"></div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="btn-tab active" data-tab="overview" onclick="switchTab('overview', this)">📊 ภาพรวม</button>
-    <button class="btn-tab" data-tab="detail" onclick="switchTab('detail', this)">📋 รายละเอียด</button>
-    <button class="btn-tab" data-tab="compare" onclick="switchTab('compare', this)">⚖️ เปรียบเทียบ</button>
-  </div>
-
-  <!-- Overview -->
-  <div class="tab-content active" id="tab-overview">
-    <div class="chart-grid">
-      <div class="chart-box"><h3>ยอดขาย vs เงินที่ได้รับ</h3><div style="position:relative;height:380px;"><canvas id="barChart"></canvas></div></div>
-      <div class="chart-box"><h3>สัดส่วนค่าใช้จ่ายรวมทุกร้าน</h3><div style="position:relative;height:380px;"><canvas id="pieChart"></canvas></div></div>
-    </div>
-    <div class="chart-box"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto;" id="rankingTable"></div></div>
-  </div>
-
-  <!-- Detail -->
-  <div class="tab-content" id="tab-detail">
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
-      <span style="color:#888;font-size:12px;">เรียงตาม:</span>
-      <button class="btn btn-sm active" data-sort="sales" onclick="sortShops('sales', this)">ยอดขาย</button>
-      <button class="btn btn-sm" data-sort="received" onclick="sortShops('received', this)">ได้รับจริง</button>
-      <button class="btn btn-sm" data-sort="pct" onclick="sortShops('pct', this)">% หักมากสุด</button>
-    </div>
-    <div id="shopCards"></div>
-  </div>
-
-  <!-- Compare -->
-  <div class="tab-content" id="tab-compare">
-    <div class="chart-box" style="margin-bottom:16px;"><h3>เปรียบเทียบ % ค่าใช้จ่ายแต่ละร้าน</h3><div style="position:relative;height:450px;"><canvas id="compareChart"></canvas></div></div>
-    <div class="chart-box"><h3>เปรียบเทียบ % ค่าใช้จ่ายตามประเภท</h3><div style="overflow-x:auto;" id="compareTable"></div></div>
-  </div>
-
-  <div class="footer">Lazada Financial Dashboard V1 — พร้อมรองรับ Shopee ใน V2</div>
+<div class="ctr">
+<div class="pbar">
+<button class="pbtn alaz" id="btn-lazada" onclick="swPlat('lazada')">🟣 Lazada</button>
+<button class="pbtn" id="btn-shopee" onclick="swPlat('shopee')">🟠 Shopee</button>
 </div>
 
-<script>
-/* ═══════════ DATA ═══════════ */
-const FEE_GROUPS = {
-  "ค่าธรรมเนียมจากลาซาด้า": [
-    "หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins",
-    "คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า",
-    "Campaign Fee","Reversal Campaign Fee"
-  ],
-  "ค่าบริการขนส่ง": [
-    "ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า",
-    "หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"
-  ],
-  "ค่าธรรมเนียมด้านการตลาด": [
-    "ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins",
-    "Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins",
-    "หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า",
-    "ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า"
-  ]
-};
+<div class="ps act" id="sec-lazada">
+<div class="hdr"><div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#c4b5fd,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">LAZADA</span><span style="font-size:24px;font-weight:300;color:#444">|</span><span style="font-size:19px;font-weight:600;color:#ddd">Financial Dashboard</span><span style="font-size:10px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.15);padding:2px 8px;border-radius:12px">V2</span></div><div style="font-size:12px;color:#555;margin-top:3px" id="laz-cnt"></div></div>
+<button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" id="laz-fbtn" onclick="tgForm('laz')">➕ เพิ่มร้านใหม่</button></div>
+<div class="fm" id="laz-fm" style="border:1px solid rgba(124,58,237,0.25)"><h3 style="font-size:18px;font-weight:700;color:#c4b5fd;margin-bottom:20px">➕ เพิ่มข้อมูลร้านใหม่ (Lazada)</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อร้าน *</label><input class="fi" id="laz_fn"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">รหัสร้าน</label><input class="fi" id="laz_fsi"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">งวด</label><input class="fi" id="laz_fp" placeholder="01/2026"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ฝ่ายขาย</label><input class="fi" id="laz_fsp"></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ยอดขาย *</label><input class="fi" type="number" id="laz_fs" oninput="uPct('laz')"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">คืนสินค้า (ลบ)</label><input class="fi" type="number" id="laz_fr"></div></div>
+<h4 style="font-size:14px;font-weight:600;color:#a78bfa;margin-bottom:10px">ค่าใช้จ่าย — ติ๊กเลือก</h4><div id="laz-fcb"></div>
+<div style="display:flex;gap:10px;margin-top:16px"><button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" onclick="subForm('laz')">บันทึก</button><button class="btn" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)" onclick="tgForm('laz')">ยกเลิก</button></div></div>
+<div class="sg" id="laz-sum"></div>
+<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap" id="laz-tabs"><button class="btab" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" onclick="swTab('laz','ov',this)">📊 ภาพรวม</button><button class="btab" onclick="swTab('laz','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('laz','cp',this)">⚖️ เปรียบเทียบ</button></div>
+<div class="tc act" id="laz-ov"><div class="cg"><div class="cb"><h3>ยอดขาย vs ได้รับจริง</h3><div style="position:relative;height:380px"><canvas id="laz-bar"></canvas></div></div><div class="cb"><h3>สัดส่วนค่าใช้จ่าย</h3><div style="position:relative;height:380px"><canvas id="laz-pie"></canvas></div></div></div><div class="cb"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto" id="laz-rank"></div></div></div>
+<div class="tc" id="laz-dt"><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center"><span style="color:#888;font-size:12px">เรียงตาม:</span><button class="bsm act" onclick="doSort('laz','sales',this)">ยอดขาย</button><button class="bsm" onclick="doSort('laz','received',this)">ได้รับจริง</button><button class="bsm" onclick="doSort('laz','pct',this)">% หักมากสุด</button></div><div id="laz-cards"></div></div>
+<div class="tc" id="laz-cp"><div class="cb" style="margin-bottom:16px"><h3>เปรียบเทียบ % ค่าใช้จ่าย</h3><div style="position:relative;height:450px"><canvas id="laz-cmp"></canvas></div></div><div class="cb"><h3>เปรียบเทียบตามประเภท</h3><div style="overflow-x:auto" id="laz-ctbl"></div></div></div>
+</div>
 
-let shops = [
-  { id:1, name:"บ้านม่านไทย", storeId:"TH1JHSTHN9", period:"01/2026", salesPerson:"", sales:223587.69, returns:-6400,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-25484.95,"ค่าธรรมเนียมการชำระเงิน":-7263.83,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-3804.10,"คืนค่าธรรมเนียมการชำระเงิน":204.08,"คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":2.26,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":719.04,"ส่วนต่างค่าจัดส่ง":-115,"ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า":-410,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-1005,"Premium Package":-9352.39,"ส่วนลด LazCoins":-2182.41,"Reversal Promotional Charges Flexi-Combo":15,"Reverse - Premium Package":263.92,"คืนค่าส่วนลด LazCoins":189.90,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-1889.48,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":30,"ค่าบริการโปรโมทสินค้า":-4392.12}, totalReceived:162712.61 },
-  { id:2, name:"Piramid Shop", storeId:"TH1JHS2GMI", period:"01/2026", salesPerson:"", sales:182609, returns:-4334,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-20766.82,"ค่าธรรมเนียมการชำระเงิน":-5978.69,"Campaign Fee":-1985.93,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-2685.76,"Reversal Campaign Fee":131.71,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":482.85,"ส่วนต่างค่าจัดส่ง":-40,"ค่าขนส่งการคืนสินค้า":-256,"หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)":-76,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-1234,"ส่วนลด LazCoins":-2031.36,"Reversal Promotional Charges Flexi-Combo":29,"คืนค่าส่วนลด LazCoins":130.02,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-1285,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":35,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-4683.41,"คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า":177.21,"ค่าบริการโปรโมทสินค้า":-2561.95}, totalReceived:135675.87 },
-  { id:3, name:"ผ้าม่านคุณภาพดีราคาถูก", storeId:"TH1JHSIX8W", period:"01/2026", salesPerson:"", sales:43204.86, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-4998.41,"ค่าธรรมเนียมการชำระเงิน":-1499.74,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-1014.35,"Premium Package":-1834.24,"ส่วนลด LazCoins":-348.16}, totalReceived:33509.96 },
-  { id:4, name:"YF Premium Curtain", storeId:"TH1JLD88VC", period:"01/2026", salesPerson:"", sales:41322, returns:-15005,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-4727.57,"ค่าธรรมเนียมการชำระเงิน":-1303.22,"คืนค่าธรรมเนียมการชำระเงิน":128.09,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":1709.11,"ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า":-1515.50,"คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)":200.63,"ค่าขนส่งการคืนสินค้า":-268,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-787.09,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":350.68,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-41.09}, totalReceived:20063.04 },
-  { id:5, name:"บุษบา ผ้าม่าน", storeId:"TH1JL6W7K3", period:"01/2026", salesPerson:"", sales:27885.14, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-3132.97,"ค่าธรรมเนียมการชำระเงิน":-895.54,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-621.50,"ส่วนต่างค่าจัดส่ง":-80,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-170,"Premium Package":-1149.76,"ส่วนลด LazCoins":-511.81,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-340.90,"ค่าบริการโปรโมทสินค้า":-233.86}, totalReceived:20748.80 },
-  { id:6, name:"Meidea Center", storeId:"TH11HXN", period:"01/2026", salesPerson:"", sales:23641, returns:-1498,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-2658.20,"ค่าธรรมเนียมการชำระเงิน":-764.28,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-325.03,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":172.72,"ส่วนต่างค่าจัดส่ง":-15,"ค่าขนส่งการคืนสินค้า":-104,"หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)":-100,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-704.49,"ส่วนลด LazCoins":-103.40,"Reversal Promotional Charges Flexi-Combo":5,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-42,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":12,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-975.49,"คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า":63.38,"ค่าบริการโปรโมทสินค้า":-565.24}, totalReceived:16038.97 },
-  { id:7, name:"เมษา ผ้าม่าน", storeId:"TH1JL6UPD3", period:"01/2026", salesPerson:"", sales:17926.36, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-2005.93,"ค่าธรรมเนียมการชำระเงิน":-591.64,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-122.84,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-140,"Premium Package":-736.12,"ส่วนลด LazCoins":-342.86,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-244.41,"ค่าบริการโปรโมทสินค้า":-434.83}, totalReceived:13307.73 },
-  { id:8, name:"Dream Curtains", storeId:"TH1JHRYX94", period:"01/2026", salesPerson:"", sales:9841.66, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-1130.24,"ค่าธรรมเนียมการชำระเงิน":-338.45,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-357.06,"Premium Package":-414.75,"ส่วนลด LazCoins":-150.90,"ค่าบริการโปรโมทสินค้า":-299.87}, totalReceived:7150.39 },
-  { id:9, name:"ม่านดีมีดีไซน์", storeId:"TH1JHSJ4KR", period:"01/2026", salesPerson:"", sales:3350, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-390.72,"ค่าธรรมเนียมการชำระเงิน":-113.67,"Premium Package":-143.37}, totalReceived:2702.24 },
-  { id:10, name:"Cozy9", storeId:"TH1JM3GXYS", period:"01/2026", salesPerson:"", sales:2317, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-270.22,"ค่าธรรมเนียมการชำระเงิน":-82.01,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-123.96,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-99.17}, totalReceived:1741.64 },
-  { id:11, name:"YKCurtain Premium", storeId:"TH1JHSTSFU", period:"01/2026", salesPerson:"", sales:2026, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-214.14,"ค่าธรรมเนียมการชำระเงิน":-62.30,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-60.78,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-129,"ค่าบริการโปรโมทสินค้า":-294.70}, totalReceived:1265.08 },
-  { id:12, name:"พีเค ผ้าม่าน", storeId:"TH1JHRR9X7", period:"12/2025", salesPerson:"", sales:1538, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-170.50,"ค่าธรรมเนียมการชำระเงิน":-49.08,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-15,"Premium Package":-62.58,"ส่วนลด LazCoins":-46.14,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-15}, totalReceived:1179.70 },
-  { id:13, name:"PK CURTAINS DESIGN", storeId:"TH1JI61K3W", period:"01/2026", salesPerson:"", sales:899, returns:0,
-    fees:{"หักค่าธรรมเนียมการขายสินค้า":-104.41,"ค่าธรรมเนียมการชำระเงิน":-32.40,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-44.03,"Premium Package":-47.89,"ส่วนลด LazCoins":-3.80}, totalReceived:666.47 },
+<div class="ps" id="sec-shopee">
+<div class="hdr"><div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#ff6633,#ee4d2d);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SHOPEE</span><span style="font-size:24px;font-weight:300;color:#444">|</span><span style="font-size:19px;font-weight:600;color:#ddd">Financial Dashboard</span><span style="font-size:10px;font-weight:700;color:#ee4d2d;background:rgba(238,77,45,0.15);padding:2px 8px;border-radius:12px">V2</span></div><div style="font-size:12px;color:#555;margin-top:3px" id="sp-cnt"></div></div>
+<button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" id="sp-fbtn" onclick="tgForm('sp')">➕ เพิ่มร้านใหม่</button></div>
+<div class="fm" id="sp-fm" style="border:1px solid rgba(238,77,45,0.25)"><h3 style="font-size:18px;font-weight:700;color:#ff6633;margin-bottom:20px">➕ เพิ่มข้อมูลร้านใหม่ (Shopee)</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อร้าน *</label><input class="fi" id="sp_fn"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อผู้ใช้</label><input class="fi" id="sp_fsi"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">งวด</label><input class="fi" id="sp_fp" placeholder="01/2026"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ฝ่ายขาย</label><input class="fi" id="sp_fsp"></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">รวมค่าสินค้า *</label><input class="fi" type="number" id="sp_fs" oninput="uPct('sp')"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ส่วนลด (ลบ)</label><input class="fi" type="number" id="sp_fr"></div></div>
+<h4 style="font-size:14px;font-weight:600;color:#ff6633;margin-bottom:10px">ค่าใช้จ่าย — ติ๊กเลือก</h4><div id="sp-fcb"></div>
+<div style="display:flex;gap:10px;margin-top:16px"><button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" onclick="subForm('sp')">บันทึก</button><button class="btn" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)" onclick="tgForm('sp')">ยกเลิก</button></div></div>
+<div class="sg" id="sp-sum"></div>
+<div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap" id="sp-tabs"><button class="btab" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" onclick="swTab('sp','ov',this)">📊 ภาพรวม</button><button class="btab" onclick="swTab('sp','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('sp','cp',this)">⚖️ เปรียบเทียบ</button></div>
+<div class="tc act" id="sp-ov"><div class="cg"><div class="cb"><h3>ยอดขาย vs ได้รับจริง</h3><div style="position:relative;height:380px"><canvas id="sp-bar"></canvas></div></div><div class="cb"><h3>สัดส่วนค่าใช้จ่าย</h3><div style="position:relative;height:380px"><canvas id="sp-pie"></canvas></div></div></div><div class="cb"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto" id="sp-rank"></div></div></div>
+<div class="tc" id="sp-dt"><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center"><span style="color:#888;font-size:12px">เรียงตาม:</span><button class="bsm act" onclick="doSort('sp','sales',this)">ยอดขาย</button><button class="bsm" onclick="doSort('sp','received',this)">ได้รับจริง</button><button class="bsm" onclick="doSort('sp','pct',this)">% หักมากสุด</button></div><div id="sp-cards"></div></div>
+<div class="tc" id="sp-cp"><div class="cb" style="margin-bottom:16px"><h3>เปรียบเทียบ % ค่าใช้จ่าย</h3><div style="position:relative;height:520px"><canvas id="sp-cmp"></canvas></div></div><div class="cb"><h3>เปรียบเทียบตามประเภท</h3><div style="overflow-x:auto" id="sp-ctbl"></div></div></div>
+</div>
+
+<div class="ftr">Financial Dashboard V2 — Lazada & Shopee</div>
+</div>
+<script>
+Chart.defaults.responsive=true;Chart.defaults.maintainAspectRatio=false;
+const fmt=n=>n.toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fp=n=>n.toFixed(2)+"%";const pc=p=>p>30?"#f87171":p>25?"#fbbf24":"#34d399";const tn=(n,l=10)=>n.length>l?n.slice(0,l)+"…":n;
+
+const LFG={"ค่าธรรมเนียมจากลาซาด้า":["หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า","Campaign Fee","Reversal Campaign Fee"],"ค่าบริการขนส่ง":["ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า","หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"],"ค่าธรรมเนียมด้านการตลาด":["ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins","Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins","หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า","ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า"]};
+const SFG={"โค้ดส่วนลด/เงินสนับสนุน":["โค้ดส่วนลดที่ออกโดยผู้ขาย"],"ค่าจัดส่ง":["ค่าจัดส่งที่ชำระโดยผู้ซื้อ","ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง","ค่าจัดส่งสินค้าที่ออกโดย Shopee","ค่าจัดส่งสินค้าคืน"],"ค่าธรรมเนียม/ค่าบริการ":["ค่าคอมมิชชั่น","ค่าบริการ","ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม","ค่าธุรกรรมการชำระเงิน","ค่าคอมมิชชั่น AMS"]};
+
+let LS=[
+{id:1,name:"บ้านม่านไทย",storeId:"TH1JHSTHN9",period:"01/2026",salesPerson:"",sales:223587.69,returns:-6400,fees:{"หักค่าธรรมเนียมการขายสินค้า":-25484.95,"ค่าธรรมเนียมการชำระเงิน":-7263.83,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-3804.10,"คืนค่าธรรมเนียมการชำระเงิน":204.08,"คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":2.26,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":719.04,"ส่วนต่างค่าจัดส่ง":-115,"ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า":-410,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-1005,"Premium Package":-9352.39,"ส่วนลด LazCoins":-2182.41,"Reversal Promotional Charges Flexi-Combo":15,"Reverse - Premium Package":263.92,"คืนค่าส่วนลด LazCoins":189.90,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-1889.48,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":30,"ค่าบริการโปรโมทสินค้า":-4392.12},totalReceived:162712.61},
+{id:2,name:"Piramid Shop",storeId:"TH1JHS2GMI",period:"01/2026",salesPerson:"",sales:182609,returns:-4334,fees:{"หักค่าธรรมเนียมการขายสินค้า":-20766.82,"ค่าธรรมเนียมการชำระเงิน":-5978.69,"Campaign Fee":-1985.93,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-2685.76,"Reversal Campaign Fee":131.71,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":482.85,"ส่วนต่างค่าจัดส่ง":-40,"ค่าขนส่งการคืนสินค้า":-256,"หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)":-76,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-1234,"ส่วนลด LazCoins":-2031.36,"Reversal Promotional Charges Flexi-Combo":29,"คืนค่าส่วนลด LazCoins":130.02,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-1285,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":35,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-4683.41,"คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า":177.21,"ค่าบริการโปรโมทสินค้า":-2561.95},totalReceived:135675.87},
+{id:3,name:"ผ้าม่านคุณภาพดีราคาถูก",storeId:"TH1JHSIX8W",period:"01/2026",salesPerson:"",sales:43204.86,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-4998.41,"ค่าธรรมเนียมการชำระเงิน":-1499.74,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-1014.35,"Premium Package":-1834.24,"ส่วนลด LazCoins":-348.16},totalReceived:33509.96},
+{id:4,name:"YF Premium Curtain",storeId:"TH1JLD88VC",period:"01/2026",salesPerson:"",sales:41322,returns:-15005,fees:{"หักค่าธรรมเนียมการขายสินค้า":-4727.57,"ค่าธรรมเนียมการชำระเงิน":-1303.22,"คืนค่าธรรมเนียมการชำระเงิน":128.09,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":1709.11,"ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า":-1515.50,"คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)":200.63,"ค่าขนส่งการคืนสินค้า":-268,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-787.09,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":350.68,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-41.09},totalReceived:20063.04},
+{id:5,name:"บุษบา ผ้าม่าน",storeId:"TH1JL6W7K3",period:"01/2026",salesPerson:"",sales:27885.14,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-3132.97,"ค่าธรรมเนียมการชำระเงิน":-895.54,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-621.50,"ส่วนต่างค่าจัดส่ง":-80,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-170,"Premium Package":-1149.76,"ส่วนลด LazCoins":-511.81,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-340.90,"ค่าบริการโปรโมทสินค้า":-233.86},totalReceived:20748.80},
+{id:6,name:"Meidea Center",storeId:"TH11HXN",period:"01/2026",salesPerson:"",sales:23641,returns:-1498,fees:{"หักค่าธรรมเนียมการขายสินค้า":-2658.20,"ค่าธรรมเนียมการชำระเงิน":-764.28,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-325.03,"คืนส่วนลดค่าธรรมเนียมการขายสินค้า":172.72,"ส่วนต่างค่าจัดส่ง":-15,"ค่าขนส่งการคืนสินค้า":-104,"หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)":-100,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-704.49,"ส่วนลด LazCoins":-103.40,"Reversal Promotional Charges Flexi-Combo":5,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-42,"คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า":12,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-975.49,"คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า":63.38,"ค่าบริการโปรโมทสินค้า":-565.24},totalReceived:16038.97},
+{id:7,name:"เมษา ผ้าม่าน",storeId:"TH1JL6UPD3",period:"01/2026",salesPerson:"",sales:17926.36,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-2005.93,"ค่าธรรมเนียมการชำระเงิน":-591.64,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-122.84,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-140,"Premium Package":-736.12,"ส่วนลด LazCoins":-342.86,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-244.41,"ค่าบริการโปรโมทสินค้า":-434.83},totalReceived:13307.73},
+{id:8,name:"Dream Curtains",storeId:"TH1JHRYX94",period:"01/2026",salesPerson:"",sales:9841.66,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-1130.24,"ค่าธรรมเนียมการชำระเงิน":-338.45,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-357.06,"Premium Package":-414.75,"ส่วนลด LazCoins":-150.90,"ค่าบริการโปรโมทสินค้า":-299.87},totalReceived:7150.39},
+{id:9,name:"ม่านดีมีดีไซน์",storeId:"TH1JHSJ4KR",period:"01/2026",salesPerson:"",sales:3350,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-390.72,"ค่าธรรมเนียมการชำระเงิน":-113.67,"Premium Package":-143.37},totalReceived:2702.24},
+{id:10,name:"Cozy9",storeId:"TH1JM3GXYS",period:"01/2026",salesPerson:"",sales:2317,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-270.22,"ค่าธรรมเนียมการชำระเงิน":-82.01,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-123.96,"ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า":-99.17},totalReceived:1741.64},
+{id:11,name:"YKCurtain Premium",storeId:"TH1JHSTSFU",period:"01/2026",salesPerson:"",sales:2026,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-214.14,"ค่าธรรมเนียมการชำระเงิน":-62.30,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-60.78,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-129,"ค่าบริการโปรโมทสินค้า":-294.70},totalReceived:1265.08},
+{id:12,name:"พีเค ผ้าม่าน",storeId:"TH1JHRR9X7",period:"12/2025",salesPerson:"",sales:1538,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-170.50,"ค่าธรรมเนียมการชำระเงิน":-49.08,"ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)":-15,"Premium Package":-62.58,"ส่วนลด LazCoins":-46.14,"หักค่าคูปองส่งเสริมการขายจากผู้ขาย":-15},totalReceived:1179.70},
+{id:13,name:"PK CURTAINS DESIGN",storeId:"TH1JI61K3W",period:"01/2026",salesPerson:"",sales:899,returns:0,fees:{"หักค่าธรรมเนียมการขายสินค้า":-104.41,"ค่าธรรมเนียมการชำระเงิน":-32.40,"ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins":-44.03,"Premium Package":-47.89,"ส่วนลด LazCoins":-3.80},totalReceived:666.47}
 ];
 
-let currentSort = "sales";
-let barChartInstance = null;
-let pieChartInstance = null;
-let compareChartInstance = null;
+let SS=[
+{id:101,name:"ทิว ร้อยเอ็ด",storeId:"meideacenter",period:"01/2026",salesPerson:"",sales:248137,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-2190,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":2055,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-11845,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":9334,"ค่าจัดส่งสินค้าคืน":-108,"ค่าคอมมิชชั่น":-18431,"ค่าบริการ":-18431,"ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม":-184,"ค่าธุรกรรมการชำระเงิน":-9189,"ค่าคอมมิชชั่น AMS":-3369},totalReceived:195779},
+{id:102,name:"มีมี่ กาฬสินธุ์",storeId:"mm.shop101",period:"01/2026",salesPerson:"",sales:179155,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-1620,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":1375,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-8596,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":6826,"ค่าจัดส่งสินค้าคืน":-131,"ค่าคอมมิชชั่น":-13301,"ค่าบริการ":-13301,"ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม":-93,"ค่าธุรกรรมการชำระเงิน":-6279,"ค่าคอมมิชชั่น AMS":-2226},totalReceived:141809},
+{id:103,name:"ปาย สารคาม",storeId:"your.mar.ket",period:"01/2026",salesPerson:"",sales:178461,returns:0,fees:{"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":3410,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-11420,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":7919,"ค่าจัดส่งสินค้าคืน":-48,"ค่าคอมมิชชั่น":-13370,"ค่าบริการ":-13370,"ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม":-135,"ค่าธุรกรรมการชำระเงิน":-5833,"ค่าคอมมิชชั่น AMS":-998},totalReceived:144616},
+{id:104,name:"จ๋า กาฬสินธุ์",storeId:"mart199423",period:"01/2026",salesPerson:"",sales:109359,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-35,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":745,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-5002,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":4056,"ค่าจัดส่งสินค้าคืน":-48,"ค่าคอมมิชชั่น":-8189,"ค่าบริการ":-8189,"ค่าธุรกรรมการชำระเงิน":-4041,"ค่าคอมมิชชั่น AMS":-831},totalReceived:87825},
+{id:105,name:"โช สารคาม",storeId:"cozy9",period:"01/2026",salesPerson:"",sales:103453,returns:0,fees:{"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":2147,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-7223,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":4867,"ค่าคอมมิชชั่น":-7747,"ค่าบริการ":-7747,"ค่าธุรกรรมการชำระเงิน":-3387,"ค่าคอมมิชชั่น AMS":-1308},totalReceived:83055},
+{id:106,name:"เฟิน อุบล",storeId:"your_curtains",period:"01/2026",salesPerson:"",sales:75252,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-655,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":641,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-3711,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":3070,"ค่าคอมมิชชั่น":-5587,"ค่าบริการ":-5587,"ค่าธุรกรรมการชำระเงิน":-2951,"ค่าคอมมิชชั่น AMS":-169},totalReceived:60303},
+{id:107,name:"วาสนา ขอนแก่น",storeId:"baanmaanthai",period:"01/2026",salesPerson:"",sales:71242,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-420,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":1208,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-4064,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":2785,"ค่าคอมมิชชั่น":-5307,"ค่าบริการ":-5307,"ค่าธุรกรรมการชำระเงิน":-2565,"ค่าคอมมิชชั่น AMS":-931},totalReceived:56641},
+{id:108,name:"วิว อุบล",storeId:"little_curtain",period:"01/2026",salesPerson:"",sales:65741,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-500,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":378,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-3398,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":2780,"ค่าจัดส่งสินค้าคืน":-83,"ค่าคอมมิชชั่น":-4883,"ค่าบริการ":-4883,"ค่าธุรกรรมการชำระเงิน":-2443,"ค่าคอมมิชชั่น AMS":-579},totalReceived:52130},
+{id:109,name:"มายเนม1",storeId:"simple_home9",period:"01/2026",salesPerson:"",sales:42696,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-436,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":6,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-2084,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":2078,"ค่าคอมมิชชั่น":-3165,"ค่าบริการ":-3165,"ค่าธุรกรรมการชำระเงิน":-1526,"ค่าคอมมิชชั่น AMS":-1678},totalReceived:32726},
+{id:110,name:"นุ่น ขอนแก่น",storeId:"yk.curtain",period:"01/2026",salesPerson:"",sales:34134,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-34,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":705,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-2859,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":2154,"ค่าคอมมิชชั่น":-2554,"ค่าบริการ":-2554,"ค่าธุรกรรมการชำระเงิน":-1118,"ค่าคอมมิชชั่น AMS":-319},totalReceived:27555},
+{id:111,name:"พริ้ม กาฬสินธุ์",storeId:"tohfun.curtain",period:"01/2026",salesPerson:"",sales:33255,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-360,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":375,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-1454,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":1079,"ค่าคอมมิชชั่น":-2462,"ค่าบริการ":-2462,"ค่าธุรกรรมการชำระเงิน":-1070,"ค่าคอมมิชชั่น AMS":-133},totalReceived:26768},
+{id:112,name:"ลูกหนู สารคาม",storeId:"beautycurtain101",period:"01/2026",salesPerson:"",sales:20348,returns:0,fees:{"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":974,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-1419,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":415,"ค่าคอมมิชชั่น":-1524,"ค่าบริการ":-1524,"ค่าธุรกรรมการชำระเงิน":-704,"ค่าคอมมิชชั่น AMS":-115},totalReceived:16451},
+{id:113,name:"แนน ร้อยเอ็ด",storeId:"bussabar_curtain",period:"01/2026",salesPerson:"",sales:15660,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-145,"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":285,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-748,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":407,"ค่าคอมมิชชั่น":-1161,"ค่าบริการ":-1161,"ค่าธุรกรรมการชำระเงิน":-564,"ค่าคอมมิชชั่น AMS":-158},totalReceived:12415},
+{id:114,name:"ปุ๊กปิ๊ก ร้อยเอ็ด",storeId:"maandee_medesign",period:"01/2026",salesPerson:"",sales:5410,returns:0,fees:{"ค่าจัดส่งที่ชำระโดยผู้ซื้อ":236,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-395,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":159,"ค่าคอมมิชชั่น":-578,"ค่าธุรกรรมการชำระเงิน":-195},totalReceived:4637},
+{id:115,name:"เมลานี",storeId:"boonhome_curtain",period:"01/2026",salesPerson:"",sales:2627,returns:0,fees:{"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-150,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":150,"ค่าคอมมิชชั่น":-197,"ค่าบริการ":-197,"ค่าธุรกรรมการชำระเงิน":-84},totalReceived:2149},
+{id:116,name:"มายเนม2",storeId:"wowcurtain101",period:"01/2026",salesPerson:"",sales:1172,returns:0,fees:{"โค้ดส่วนลดที่ออกโดยผู้ขาย":-26,"ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง":-89,"ค่าจัดส่งสินค้าที่ออกโดย Shopee":89,"ค่าคอมมิชชั่น":-86,"ค่าบริการ":-86,"ค่าธุรกรรมการชำระเงิน":-37},totalReceived:937}
+];
 
-// Prevent Chart.js infinite resize
-Chart.defaults.responsive = true;
-Chart.defaults.maintainAspectRatio = false;
+const ST={laz:{shops:LS,sort:"sales",fg:LFG,ch:{},ac:"#7c3aed"},sp:{shops:SS,sort:"sales",fg:SFG,ch:{},ac:"#ee4d2d"}};
+function gs(p){const s=ST[p];return[...s.shops].sort((a,b)=>{if(s.sort==="sales")return b.sales-a.sales;if(s.sort==="received")return b.totalReceived-a.totalReceived;return((b.sales-b.totalReceived)/b.sales)-((a.sales-a.totalReceived)/a.sales)})}
+function gt(p){const sh=ST[p].shops,ts=sh.reduce((a,s)=>a+s.sales,0),tr=sh.reduce((a,s)=>a+s.totalReceived,0);return{ts,tr,td:ts-tr,pct:ts?((ts-tr)/ts)*100:0}}
 
-/* ═══════════ HELPERS ═══════════ */
-const fmt = n => n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtPct = n => n.toFixed(2) + "%";
-const pctColor = p => p > 30 ? "var(--red)" : p > 25 ? "var(--yellow)" : "var(--green)";
-const pctClass = p => p > 30 ? "color-red" : p > 25 ? "color-yellow" : "color-green";
-const truncName = (n, len=10) => n.length > len ? n.slice(0, len) + "…" : n;
+function rAll(p){const s=ST[p];document.getElementById(p+"-cnt").textContent=`รายงานการเงินทุกร้านค้า — ${s.shops.length} ร้าน`;rSum(p);rRank(p);rCards(p);rCTbl(p);rBar(p);rPie(p);rCmp(p)}
+function rSum(p){const t=gt(p);document.getElementById(p+"-sum").innerHTML=[{l:"ยอดขายรวม",v:"฿"+fmt(t.ts),c:"#34d399"},{l:"ได้รับจริงรวม",v:"฿"+fmt(t.tr),c:"#60a5fa"},{l:"ค่าใช้จ่ายรวม",v:"฿"+fmt(t.td),c:"#f87171"},{l:"% ถูกหักเฉลี่ย",v:fp(t.pct),c:"#fbbf24"}].map(c=>`<div class="sc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.c}">${c.v}</div></div>`).join("")}
 
-function getSorted() {
-  return [...shops].sort((a, b) => {
-    if (currentSort === "sales") return b.sales - a.sales;
-    if (currentSort === "received") return b.totalReceived - a.totalReceived;
-    return ((b.sales - b.totalReceived) / b.sales) - ((a.sales - a.totalReceived) / a.sales);
-  });
-}
+function rRank(p){const sorted=gs(p);let h='<table><thead><tr><th>#</th><th>ร้านค้า</th><th>งวด</th><th class="rt">ยอดขาย</th><th class="rt">ค่าใช้จ่าย</th><th class="rt">ได้รับจริง</th><th class="rt">% หัก</th><th class="rt">% ได้รับ</th></tr></thead><tbody>';
+sorted.forEach((s,i)=>{const d=s.sales-s.totalReceived,pd=(d/s.sales)*100,pr=(s.totalReceived/s.sales)*100;h+=`<tr><td style="color:#555">${i+1}</td><td style="font-weight:600;color:#ddd">${s.name}</td><td style="color:#777">${s.period}</td><td class="rt mono" style="color:#34d399">฿${fmt(s.sales)}</td><td class="rt mono" style="color:#f87171">฿${fmt(d)}</td><td class="rt mono" style="color:#60a5fa">฿${fmt(s.totalReceived)}</td><td class="rt mono" style="color:${pc(pd)}">${fp(pd)}</td><td class="rt mono" style="color:#60a5fa">${fp(pr)}</td></tr>`});
+document.getElementById(p+"-rank").innerHTML=h+"</tbody></table>"}
 
-function getTotals() {
-  const ts = shops.reduce((a, s) => a + s.sales, 0);
-  const tr = shops.reduce((a, s) => a + s.totalReceived, 0);
-  return { ts, tr, td: ts - tr, pct: ((ts - tr) / ts) * 100 };
-}
+function rCards(p){const sorted=gs(p),fg=ST[p].fg,ac=ST[p].ac;let h="";
+sorted.forEach(s=>{const tf=Object.values(s.fees).reduce((a,b)=>a+b,0),td=tf+(s.returns||0),pd=Math.abs(td)/s.sales*100,pr=(s.totalReceived/s.sales)*100;
+h+=`<div class="sk"><div class="sh" onclick="tgShop('${p}',${s.id})"><div style="flex:1 1 180px;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700">${s.name}</span><span style="font-size:10px;color:#888;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px">${s.period}</span></div>${s.salesPerson?`<div style="font-size:11px;color:#888;margin-top:2px">ฝ่ายขาย: ${s.salesPerson}</div>`:""}</div><div style="text-align:right;min-width:120px"><div style="font-size:10px;color:#888">ยอดขาย</div><div class="mono" style="font-size:16px;font-weight:700;color:#34d399">฿${fmt(s.sales)}</div></div><div style="text-align:right;min-width:110px"><div style="font-size:10px;color:#888">ได้รับจริง</div><div class="mono" style="font-size:16px;font-weight:700;color:#60a5fa">฿${fmt(s.totalReceived)}</div></div><div style="text-align:right;min-width:65px"><div style="font-size:10px;color:#888">หัก %</div><div class="mono" style="font-size:16px;font-weight:700;color:${pc(pd)}">${fp(pd)}</div></div><span class="ar" id="${p}-ar-${s.id}">▼</span></div>`;
+h+=`<div class="sd" id="${p}-sd-${s.id}"><div style="padding-top:14px"><div style="font-size:11px;color:#666;margin-bottom:6px">${s.storeId}</div>`;
+if(s.returns) h+=`<div class="fr" style="color:#f87171"><span>คืนสินค้า/ส่วนลด</span><span class="mono">฿${fmt(s.returns)} (${fp(Math.abs(s.returns)/s.sales*100)})</span></div>`;
+Object.entries(fg).forEach(([gn,fks])=>{const items=fks.filter(k=>s.fees[k]!==undefined&&s.fees[k]!==0);if(!items.length) return;const gtt=items.reduce((a,k)=>a+s.fees[k],0);
+h+=`<div style="font-size:12px;font-weight:600;color:${ac};margin:10px 0 4px">${gn}</div>`;
+items.forEach(k=>{const v=s.fees[k];h+=`<div class="fr"><span style="color:#bbb">${k}</span><span class="mono" style="color:${v>=0?'#34d399':'#f87171'}">฿${fmt(v)} (${fp(Math.abs(v)/s.sales*100)})</span></div>`});
+h+=`<div class="ft" style="color:${gtt>=0?'#34d399':'#fbbf24'}"><span>รวม ${gn}</span><span class="mono">฿${fmt(gtt)} (${fp(Math.abs(gtt)/s.sales*100)})</span></div>`});
+h+=`<div class="sb" style="background:rgba(99,102,241,0.1);margin-top:14px"><span style="color:#c4b5fd">รวมค่าใช้จ่ายทั้งหมด</span><span class="mono" style="color:#f87171">฿${fmt(Math.abs(td))} (${fp(pd)})</span></div><div class="sb" style="background:rgba(52,211,153,0.1)"><span style="color:#6ee7b7">เงินที่ได้รับจริง</span><span class="mono" style="color:#34d399">฿${fmt(s.totalReceived)} (${fp(pr)})</span></div></div></div></div>`});
+document.getElementById(p+"-cards").innerHTML=h}
 
-function getGroupTotal(shop, feeKeys) {
-  return feeKeys.reduce((a, k) => a + (shop.fees[k] || 0), 0);
-}
+function rCTbl(p){const sorted=gs(p),gNames=Object.keys(ST[p].fg),fg=ST[p].fg,ac=ST[p].ac;
+let h='<table style="min-width:600px"><thead><tr><th style="text-align:left;color:#888;min-width:110px">ร้านค้า</th>';
+gNames.forEach(g=>{h+=`<th class="rt" style="color:${ac};min-width:80px">${g}</th>`});h+='<th class="rt" style="color:#fbbf24;font-weight:700">รวม %</th></tr></thead><tbody>';
+sorted.forEach((s,i)=>{h+=`<tr><td style="font-weight:600;color:#ddd">${s.name}</td>`;
+gNames.forEach(gn=>{const gp=Math.abs(fg[gn].reduce((a,k)=>a+(s.fees[k]||0),0))/s.sales*100;h+=`<td class="rt mono" style="color:${pc(gp>15?31:gp>10?26:0)}">${fp(gp)}</td>`});
+const tp=(s.sales-s.totalReceived)/s.sales*100;h+=`<td class="rt mono" style="font-weight:700;color:${pc(tp)}">${fp(tp)}</td></tr>`});
+document.getElementById(p+"-ctbl").innerHTML=h+"</tbody></table>"}
 
-/* ═══════════ RENDER ═══════════ */
-function renderAll() {
-  renderSummary();
-  renderRankingTable();
-  renderShopCards();
-  renderCompareTable();
-  renderBarChart();
-  renderPieChart();
-  renderCompareChart();
-  document.getElementById("shopCount").textContent = `รายงานการเงินทุกร้านค้า — ${shops.length} ร้าน`;
-}
+function rBar(p){const sorted=gs(p),s=ST[p];if(s.ch.bar)s.ch.bar.destroy();
+s.ch.bar=new Chart(document.getElementById(p+"-bar"),{type:"bar",data:{labels:sorted.map(s=>tn(s.name)),datasets:[{label:"ยอดขาย",data:sorted.map(s=>s.sales),backgroundColor:p==="laz"?"#34d399":"#ff8a65",borderRadius:4},{label:"ได้รับจริง",data:sorted.map(s=>s.totalReceived),backgroundColor:"#60a5fa",borderRadius:4}]},options:{plugins:{legend:{labels:{color:"#999",font:{size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ฿${fmt(c.raw)}`},backgroundColor:"#1a1a2e",titleColor:"#ddd",bodyColor:"#ddd"}},scales:{x:{ticks:{color:"#888",font:{size:8},maxRotation:45},grid:{color:"rgba(255,255,255,0.03)"}},y:{ticks:{color:"#888",font:{size:10},callback:v=>(v/1000).toFixed(0)+"K"},grid:{color:"rgba(255,255,255,0.03)"}}}}})}
 
-function renderSummary() {
-  const t = getTotals();
-  document.getElementById("summaryCards").innerHTML = [
-    { l: "ยอดขายรวม", v: `฿${fmt(t.ts)}`, c: "green" },
-    { l: "ได้รับจริงรวม", v: `฿${fmt(t.tr)}`, c: "blue" },
-    { l: "ค่าใช้จ่ายรวม", v: `฿${fmt(t.td)}`, c: "red" },
-    { l: "% ถูกหักเฉลี่ย", v: fmtPct(t.pct), c: "yellow" },
-  ].map(c => `<div class="summary-card"><div class="label">${c.l}</div><div class="value color-${c.c}">${c.v}</div></div>`).join("");
-}
+function rPie(p){const s=ST[p],ct={};s.shops.forEach(sh=>{Object.entries(s.fg).forEach(([gn,fks])=>{ct[gn]=(ct[gn]||0)+fks.reduce((a,k)=>a+(sh.fees[k]||0),0)})});
+const data=Object.entries(ct).filter(([,v])=>v<0).map(([n,v])=>({name:n,value:Math.abs(v)})).sort((a,b)=>b.value-a.value);
+const cols=p==="laz"?["#0f766e","#be185d","#7c3aed","#ea580c","#0369a1"]:["#ee4d2d","#f59e0b","#ef4444","#8b5cf6","#06b6d4"];
+if(s.ch.pie)s.ch.pie.destroy();s.ch.pie=new Chart(document.getElementById(p+"-pie"),{type:"doughnut",data:{labels:data.map(d=>d.name),datasets:[{data:data.map(d=>d.value),backgroundColor:cols,borderWidth:0,borderRadius:4}]},options:{cutout:"50%",plugins:{legend:{position:"bottom",labels:{color:"#999",font:{size:10},padding:12}},tooltip:{callbacks:{label:c=>`${c.label}: ฿${fmt(c.raw)}`},backgroundColor:"#1a1a2e",titleColor:"#ddd",bodyColor:"#ddd"}}}})}
 
-function renderRankingTable() {
-  const sorted = getSorted();
-  let html = `<table class="data-table"><thead><tr>
-    <th>#</th><th>ร้านค้า</th><th>งวด</th><th class="right">ยอดขาย</th><th class="right">ค่าใช้จ่าย</th><th class="right">ได้รับจริง</th><th class="right">% หัก</th><th class="right">% ได้รับ</th>
-  </tr></thead><tbody>`;
-  sorted.forEach((s, i) => {
-    const d = s.sales - s.totalReceived;
-    const pd = (d / s.sales) * 100;
-    const pr = (s.totalReceived / s.sales) * 100;
-    html += `<tr>
-      <td style="color:#555">${i + 1}</td>
-      <td style="font-weight:600;color:#ddd">${s.name}</td>
-      <td style="color:#777">${s.period}</td>
-      <td class="right mono color-green">฿${fmt(s.sales)}</td>
-      <td class="right mono color-red">฿${fmt(d)}</td>
-      <td class="right mono color-blue">฿${fmt(s.totalReceived)}</td>
-      <td class="right mono" style="color:${pctColor(pd)}">${fmtPct(pd)}</td>
-      <td class="right mono color-blue">${fmtPct(pr)}</td>
-    </tr>`;
-  });
-  html += "</tbody></table>";
-  document.getElementById("rankingTable").innerHTML = html;
-}
+function rCmp(p){const sorted=gs(p),s=ST[p],data=sorted.map(sh=>parseFloat(((sh.sales-sh.totalReceived)/sh.sales*100).toFixed(2)));
+const cols=data.map(v=>v>30?"#f87171":v>25?"#fbbf24":"#34d399");if(s.ch.cmp)s.ch.cmp.destroy();
+s.ch.cmp=new Chart(document.getElementById(p+"-cmp"),{type:"bar",data:{labels:sorted.map(sh=>tn(sh.name)),datasets:[{label:"% หัก",data,backgroundColor:cols,borderRadius:4}]},options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+"%"},backgroundColor:"#1a1a2e",titleColor:"#ddd",bodyColor:"#ddd"}},scales:{x:{ticks:{color:"#888",font:{size:10},callback:v=>v+"%"},grid:{color:"rgba(255,255,255,0.03)"}},y:{ticks:{color:"#bbb",font:{size:10}},grid:{display:false}}}}})}
 
-function renderShopCards() {
-  const sorted = getSorted();
-  let html = "";
-  sorted.forEach(s => {
-    const totalFees = Object.values(s.fees).reduce((a, b) => a + b, 0);
-    const totalDed = totalFees + (s.returns || 0);
-    const pctDed = Math.abs(totalDed) / s.sales * 100;
-    const pctRec = (s.totalReceived / s.sales) * 100;
+function swPlat(pl){document.querySelectorAll(".ps").forEach(e=>e.classList.remove("act"));document.querySelectorAll(".pbtn").forEach(e=>{e.className="pbtn"});
+document.getElementById("sec-"+pl).classList.add("act");document.getElementById("btn-"+pl).classList.add(pl==="lazada"?"alaz":"asp");
+const p=pl==="lazada"?"laz":"sp";rBar(p);rPie(p);rCmp(p)}
 
-    html += `<div class="shop-card" id="shop-${s.id}">
-      <div class="shop-header" onclick="toggleShop(${s.id})">
-        <div style="flex:1 1 180px;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:16px;font-weight:700;color:#f0f0f0">${s.name}</span>
-            <span style="font-size:10px;color:#888;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px">${s.period}</span>
-          </div>
-          ${s.salesPerson ? `<div style="font-size:11px;color:#888;margin-top:2px">ฝ่ายขาย: ${s.salesPerson}</div>` : ""}
-        </div>
-        <div style="text-align:right;min-width:120px"><div style="font-size:10px;color:#888">ยอดขาย</div><div class="mono color-green" style="font-size:16px;font-weight:700">฿${fmt(s.sales)}</div></div>
-        <div style="text-align:right;min-width:110px"><div style="font-size:10px;color:#888">ได้รับจริง</div><div class="mono color-blue" style="font-size:16px;font-weight:700">฿${fmt(s.totalReceived)}</div></div>
-        <div style="text-align:right;min-width:65px"><div style="font-size:10px;color:#888">หัก %</div><div class="mono" style="font-size:16px;font-weight:700;color:${pctColor(pctDed)}">${fmtPct(pctDed)}</div></div>
-        <span class="arrow" id="arrow-${s.id}">▼</span>
-      </div>
-      <div class="shop-detail" id="detail-${s.id}">
-        <div style="padding-top:14px">
-          <div style="font-size:11px;color:#666;margin-bottom:6px">รหัสร้านค้า: ${s.storeId}</div>`;
+function swTab(p,t,btn){const sec=p==="laz"?"lazada":"shopee";
+document.querySelectorAll(`#sec-${sec} .tc`).forEach(e=>e.classList.remove("act"));
+document.querySelectorAll(`#${p}-tabs .btab`).forEach(e=>{e.style.background="rgba(255,255,255,0.05)";e.style.color="#888"});
+document.getElementById(p+"-"+t).classList.add("act");
+btn.style.background=p==="laz"?"linear-gradient(135deg,#7c3aed,#6d28d9)":"linear-gradient(135deg,#ff6633,#ee4d2d)";btn.style.color="#fff";
+if(t==="ov"){rBar(p);rPie(p)}if(t==="cp")rCmp(p)}
 
-    if (s.returns) {
-      html += `<div class="fee-row" style="color:#f87171"><span>หักเงินค่าสินค้า (คืนสินค้า)</span><span class="mono">฿${fmt(s.returns)} (${fmtPct(Math.abs(s.returns) / s.sales * 100)})</span></div>`;
-    }
+function doSort(p,sort,btn){ST[p].sort=sort;btn.parentElement.querySelectorAll(".bsm").forEach(e=>e.classList.remove("act"));btn.classList.add("act");rCards(p)}
+function tgShop(p,id){const d=document.getElementById(p+"-sd-"+id),a=document.getElementById(p+"-ar-"+id),op=d.classList.contains("op");
+document.querySelectorAll(`#sec-${p==="laz"?"lazada":"shopee"} .sd`).forEach(e=>e.classList.remove("op"));
+document.querySelectorAll(`#sec-${p==="laz"?"lazada":"shopee"} .ar`).forEach(e=>e.classList.remove("op"));
+if(!op){d.classList.add("op");a.classList.add("op")}}
 
-    Object.entries(FEE_GROUPS).forEach(([gn, fks]) => {
-      const items = fks.filter(k => s.fees[k] !== undefined);
-      if (!items.length) return;
-      const gt = items.reduce((a, k) => a + s.fees[k], 0);
-      html += `<div class="fee-group-title">${gn}</div>`;
-      items.forEach(k => {
-        const v = s.fees[k];
-        html += `<div class="fee-row"><span style="color:#bbb">${k}</span><span class="mono" style="color:${v >= 0 ? 'var(--green)' : 'var(--red)'}">฿${fmt(v)} (${fmtPct(Math.abs(v) / s.sales * 100)})</span></div>`;
-      });
-      html += `<div class="fee-total" style="color:${gt >= 0 ? 'var(--green)' : 'var(--yellow)'}"><span>รวม ${gn}</span><span class="mono">฿${fmt(gt)} (${fmtPct(Math.abs(gt) / s.sales * 100)})</span></div>`;
-    });
+function tgForm(p){const f=document.getElementById(p+"-fm"),b=document.getElementById(p+"-fbtn"),op=f.classList.contains("op");f.classList.toggle("op");
+b.textContent=op?"➕ เพิ่มร้านใหม่":"✕ ปิดฟอร์ม";b.style.background=op?(p==="laz"?"linear-gradient(135deg,#7c3aed,#6d28d9)":"linear-gradient(135deg,#ff6633,#ee4d2d)"):"rgba(239,68,68,0.2)";b.style.color=op?"#fff":"#f87171"}
 
-    html += `<div class="summary-box" style="background:rgba(99,102,241,0.1)"><span class="color-purple">รวมค่าใช้จ่ายทั้งหมด</span><span class="mono color-red">฿${fmt(Math.abs(totalDed))} (${fmtPct(pctDed)})</span></div>
-      <div class="summary-box" style="background:rgba(52,211,153,0.1);margin-top:6px"><span style="color:#6ee7b7">เงินที่ได้รับจริง</span><span class="mono color-green">฿${fmt(s.totalReceived)} (${fmtPct(pctRec)})</span></div>
-      </div></div></div>`;
-  });
-  document.getElementById("shopCards").innerHTML = html;
-}
+function bFCB(p){const fg=ST[p].fg,ac=ST[p].ac;let h="";
+Object.entries(fg).forEach(([gn,fees])=>{h+=`<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:${ac};margin-bottom:6px">${gn}</div>`;
+fees.forEach(fee=>{const sid=p+"_"+fee.replace(/[^a-zA-Z0-9ก-๛]/g,"_");
+h+=`<div class="fcr"><input type="checkbox" id="chk_${sid}" style="accent-color:${ac}" onchange="document.getElementById('val_${sid}').style.display=this.checked?'':'none'"><span class="fl">${fee}</span><input class="fi" type="number" id="val_${sid}" placeholder="จำนวนเงิน" style="display:none;width:160px;padding:5px 10px;flex:0 0 160px" data-fee="${fee}"></div>`});h+="</div>"});
+document.getElementById(p+"-fcb").innerHTML=h}
 
-function renderCompareTable() {
-  const sorted = getSorted();
-  const groupNames = Object.keys(FEE_GROUPS);
-  let html = `<table class="compare-table"><thead><tr>
-    <th class="sticky" style="text-align:left;color:#888;background:#0c0c14;min-width:110px">ร้านค้า</th>`;
-  groupNames.forEach(g => { html += `<th style="text-align:right;color:#a78bfa;min-width:90px">${g}</th>`; });
-  html += `<th style="text-align:right;color:#f87171">คืนสินค้า</th><th style="text-align:right;color:#fbbf24;font-weight:700">รวม %</th></tr></thead><tbody>`;
+function uPct(p){}
+function subForm(p){const name=document.getElementById(p+"_fn").value.trim(),sales=parseFloat(document.getElementById(p+"_fs").value)||0;
+if(!name||!sales){alert("กรุณากรอกชื่อร้านและยอดขาย");return}
+const fees={};document.querySelectorAll(`#${p}-fm .fi[type="number"][data-fee]`).forEach(i=>{if(i.style.display!=="none"&&i.value)fees[i.dataset.fee]=parseFloat(i.value)||0});
+const returns=parseFloat(document.getElementById(p+"_fr").value)||0,tf=Object.values(fees).reduce((a,b)=>a+b,0);
+ST[p].shops.push({id:Date.now(),name,storeId:document.getElementById(p+"_fsi").value.trim(),period:document.getElementById(p+"_fp").value.trim(),salesPerson:document.getElementById(p+"_fsp").value.trim(),sales,returns,fees,totalReceived:sales+returns+tf});
+[p+"_fn",p+"_fsi",p+"_fp",p+"_fsp",p+"_fs",p+"_fr"].forEach(id=>document.getElementById(id).value="");tgForm(p);rAll(p)}
 
-  sorted.forEach((s, i) => {
-    const bg = i % 2 ? "#0d0d18" : "#0c0c14";
-    html += `<tr><td class="sticky" style="font-weight:600;color:#ddd;background:${bg}">${s.name}</td>`;
-    groupNames.forEach(gn => {
-      const p = Math.abs(getGroupTotal(s, FEE_GROUPS[gn])) / s.sales * 100;
-      html += `<td style="text-align:right;color:${pctColor(p > 15 ? 31 : p > 10 ? 26 : 0)}" class="mono">${fmtPct(p)}</td>`;
-    });
-    const rp = Math.abs(s.returns || 0) / s.sales * 100;
-    const tp = (s.sales - s.totalReceived) / s.sales * 100;
-    html += `<td style="text-align:right;color:${rp > 0 ? 'var(--red)' : '#555'}" class="mono">${fmtPct(rp)}</td>`;
-    html += `<td style="text-align:right;font-weight:700;color:${pctColor(tp)}" class="mono">${fmtPct(tp)}</td></tr>`;
-  });
-  html += "</tbody></table>";
-  document.getElementById("compareTable").innerHTML = html;
-}
-
-/* ═══════════ CHARTS ═══════════ */
-function renderBarChart() {
-  const sorted = getSorted();
-  const labels = sorted.map(s => truncName(s.name));
-  if (barChartInstance) barChartInstance.destroy();
-  barChartInstance = new Chart(document.getElementById("barChart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        { label: "ยอดขาย", data: sorted.map(s => s.sales), backgroundColor: "#34d399", borderRadius: 4 },
-        { label: "ได้รับจริง", data: sorted.map(s => s.totalReceived), backgroundColor: "#60a5fa", borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { labels: { color: "#999", font: { size: 11, family: "'Noto Sans Thai'" } } },
-        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ฿${fmt(ctx.raw)}` }, backgroundColor: "#1a1a2e", titleColor: "#ddd", bodyColor: "#ddd", borderColor: "rgba(255,255,255,0.1)", borderWidth: 1 }
-      },
-      scales: {
-        x: { ticks: { color: "#888", font: { size: 9 }, maxRotation: 45 }, grid: { color: "rgba(255,255,255,0.03)" } },
-        y: { ticks: { color: "#888", font: { size: 10 }, callback: v => (v/1000).toFixed(0) + "K" }, grid: { color: "rgba(255,255,255,0.03)" } }
-      }
-    }
-  });
-}
-
-function renderPieChart() {
-  const ct = {};
-  shops.forEach(s => {
-    Object.entries(FEE_GROUPS).forEach(([gn, fks]) => {
-      const gt = fks.reduce((a, k) => a + (s.fees[k] || 0), 0);
-      ct[gn] = (ct[gn] || 0) + gt;
-    });
-    if (s.returns) ct["คืนสินค้า"] = (ct["คืนสินค้า"] || 0) + s.returns;
-  });
-  const data = Object.entries(ct).filter(([,v]) => v < 0).map(([n,v]) => ({ name: n, value: Math.abs(v) })).sort((a,b) => b.value - a.value);
-
-  if (pieChartInstance) pieChartInstance.destroy();
-  pieChartInstance = new Chart(document.getElementById("pieChart"), {
-    type: "doughnut",
-    data: {
-      labels: data.map(d => d.name),
-      datasets: [{ data: data.map(d => d.value), backgroundColor: ["#0f766e","#be185d","#7c3aed","#ea580c","#0369a1"], borderWidth: 0, borderRadius: 4 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, cutout: "50%",
-      plugins: {
-        legend: { position: "bottom", labels: { color: "#999", font: { size: 10, family: "'Noto Sans Thai'" }, padding: 12 } },
-        tooltip: { callbacks: { label: ctx => `${ctx.label}: ฿${fmt(ctx.raw)}` }, backgroundColor: "#1a1a2e", titleColor: "#ddd", bodyColor: "#ddd" }
-      }
-    }
-  });
-}
-
-function renderCompareChart() {
-  const sorted = getSorted();
-  const labels = sorted.map(s => truncName(s.name));
-  const data = sorted.map(s => parseFloat(((s.sales - s.totalReceived) / s.sales * 100).toFixed(2)));
-  const colors = data.map(v => v > 30 ? "#f87171" : v > 25 ? "#fbbf24" : "#34d399");
-
-  if (compareChartInstance) compareChartInstance.destroy();
-  compareChartInstance = new Chart(document.getElementById("compareChart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{ label: "% หัก", data, backgroundColor: colors, borderRadius: 4 }]
-    },
-    options: {
-      indexAxis: "y", responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => `% หัก: ${ctx.raw}%` }, backgroundColor: "#1a1a2e", titleColor: "#ddd", bodyColor: "#ddd" }
-      },
-      scales: {
-        x: { ticks: { color: "#888", font: { size: 10 }, callback: v => v + "%" }, grid: { color: "rgba(255,255,255,0.03)" } },
-        y: { ticks: { color: "#bbb", font: { size: 10, family: "'Noto Sans Thai'" } }, grid: { display: false } }
-      }
-    }
-  });
-}
-
-/* ═══════════ INTERACTIONS ═══════════ */
-function switchTab(tabId, btn) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-  document.querySelectorAll(".btn-tab").forEach(el => el.classList.remove("active"));
-  document.getElementById("tab-" + tabId).classList.add("active");
-  btn.classList.add("active");
-  if (tabId === "overview") { renderBarChart(); renderPieChart(); }
-  if (tabId === "compare") renderCompareChart();
-}
-
-function sortShops(sort, btn) {
-  currentSort = sort;
-  document.querySelectorAll("[data-sort]").forEach(el => el.classList.remove("active"));
-  btn.classList.add("active");
-  renderShopCards();
-}
-
-function toggleShop(id) {
-  const detail = document.getElementById("detail-" + id);
-  const arrow = document.getElementById("arrow-" + id);
-  const isOpen = detail.classList.contains("open");
-  // close all
-  document.querySelectorAll(".shop-detail").forEach(el => el.classList.remove("open"));
-  document.querySelectorAll(".arrow").forEach(el => el.classList.remove("open"));
-  if (!isOpen) {
-    detail.classList.add("open");
-    arrow.classList.add("open");
-  }
-}
-
-function toggleForm() {
-  const form = document.getElementById("addForm");
-  const btn = document.getElementById("toggleFormBtn");
-  const isOpen = form.classList.contains("open");
-  form.classList.toggle("open");
-  btn.textContent = isOpen ? "➕ เพิ่มร้านใหม่" : "✕ ปิดฟอร์ม";
-  btn.className = isOpen ? "btn btn-primary" : "btn btn-danger";
-}
-
-/* ═══════════ FORM ═══════════ */
-function buildFeeCheckboxes() {
-  let html = "";
-  Object.entries(FEE_GROUPS).forEach(([gn, fees]) => {
-    html += `<div style="margin-bottom:14px"><div class="fee-group-header">${gn}</div>`;
-    fees.forEach(fee => {
-      const safeId = fee.replace(/[^a-zA-Z0-9ก-๛]/g, "_");
-      html += `<div class="fee-check-row">
-        <input type="checkbox" id="chk_${safeId}" onchange="toggleFeeInput('${safeId}')">
-        <span class="fee-label">${fee}</span>
-        <input class="form-input fee-input" type="number" id="val_${safeId}" placeholder="จำนวนเงิน" style="display:none" data-fee="${fee}" oninput="updateFormPcts()">
-        <span class="fee-pct" id="pct_${safeId}"></span>
-      </div>`;
-    });
-    html += "</div>";
-  });
-  document.getElementById("feeCheckboxes").innerHTML = html;
-}
-
-function toggleFeeInput(safeId) {
-  const chk = document.getElementById("chk_" + safeId);
-  const input = document.getElementById("val_" + safeId);
-  input.style.display = chk.checked ? "" : "none";
-  if (!chk.checked) { input.value = ""; document.getElementById("pct_" + safeId).textContent = ""; }
-}
-
-function updateFormPcts() {
-  const sales = parseFloat(document.getElementById("f_sales").value) || 0;
-  if (!sales) return;
-  document.querySelectorAll(".fee-input").forEach(input => {
-    const safeId = input.id.replace("val_", "");
-    const v = parseFloat(input.value) || 0;
-    const pctEl = document.getElementById("pct_" + safeId);
-    if (v && pctEl) pctEl.textContent = "= " + fmtPct(Math.abs(v) / sales * 100);
-    else if (pctEl) pctEl.textContent = "";
-  });
-}
-
-function submitForm() {
-  const name = document.getElementById("f_name").value.trim();
-  const sales = parseFloat(document.getElementById("f_sales").value) || 0;
-  if (!name || !sales) { alert("กรุณากรอกชื่อร้านและยอดขาย"); return; }
-
-  const fees = {};
-  document.querySelectorAll(".fee-input").forEach(input => {
-    if (input.style.display !== "none" && input.value) {
-      fees[input.dataset.fee] = parseFloat(input.value) || 0;
-    }
-  });
-
-  const returns = parseFloat(document.getElementById("f_returns").value) || 0;
-  const totalFees = Object.values(fees).reduce((a, b) => a + b, 0);
-
-  shops.push({
-    id: Date.now(),
-    name,
-    storeId: document.getElementById("f_storeId").value.trim(),
-    period: document.getElementById("f_period").value.trim(),
-    salesPerson: document.getElementById("f_salesPerson").value.trim(),
-    sales, returns, fees,
-    totalReceived: sales + returns + totalFees,
-  });
-
-  // Reset form
-  ["f_name","f_storeId","f_period","f_salesPerson","f_sales","f_returns"].forEach(id => document.getElementById(id).value = "");
-  document.querySelectorAll(".fee-input").forEach(input => { input.value = ""; input.style.display = "none"; });
-  document.querySelectorAll("#feeCheckboxes input[type=checkbox]").forEach(cb => cb.checked = false);
-  document.querySelectorAll(".fee-pct").forEach(el => el.textContent = "");
-
-  toggleForm();
-  renderAll();
-}
-
-/* ═══════════ INIT ═══════════ */
-buildFeeCheckboxes();
-renderAll();
+bFCB("laz");bFCB("sp");rAll("laz");rAll("sp");
 </script>
 </body>
 </html>

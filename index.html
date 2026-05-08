@@ -111,6 +111,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <label>📅 เลือกเดือน:</label>
 <select class="msel" id="month-sel" onchange="swMonth(this.value)"></select>
 <button class="btn" id="new-month-btn" onclick="tgNewMonthBar()" style="background:#fff;border:2px dashed #bbb;color:#666;padding:8px 18px;font-size:13px">➕ เดือนใหม่</button>
+<button onclick="recalcAllTotalReceived()" title="คำนวณยอดใหม่ให้สอดคล้องกัน" style="background:none;border:1px solid #ddd;border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;color:#888">🔧</button>
 <span id="sync-status" style="font-size:11px;font-weight:600;color:#888;padding:4px 10px;background:#f0f0f3;border-radius:20px">⏳ กำลังโหลด...</span>
 </div>
 <div id="new-month-bar" style="display:none;justify-content:center;align-items:center;gap:8px;padding:8px 0 12px;flex-wrap:wrap;animation:fi 0.2s ease">
@@ -496,6 +497,30 @@ function showMonthToast(msg, color){
 /* ══ FIREBASE SYNC ══ */
 let _fbInitDone = false;
 
+function recalcAllTotalReceived() {
+  // Fix all shops: recalc totalReceived from fees+sales+returns
+  let fixed = 0;
+  ['laz','sp'].forEach(p => {
+    Object.values(DB[p]).forEach(shops => {
+      (shops||[]).forEach(s => {
+        const tf = Object.values(s.fees||{}).reduce((a,b)=>a+b,0);
+        const correct = s.sales + (s.returns||0) + tf;
+        if (Math.abs(correct - s.totalReceived) > 0.01) {
+          s.totalReceived = Math.round(correct*100)/100;
+          fixed++;
+        }
+      });
+    });
+  });
+  if (fixed > 0) {
+    saveDB();
+    rAll('laz'); rAll('sp');
+    showMonthToast(`🔧 แก้ไขข้อมูล ${fixed} ร้านให้สอดคล้องกันแล้ว`, '#7c3aed');
+  } else {
+    showMonthToast('✅ ข้อมูลทุกร้านถูกต้องแล้ว', '#059669');
+  }
+}
+
 function saveDB() {
   // Always save full DB to Firebase
   const payload = { laz: {}, sp: {} };
@@ -840,6 +865,8 @@ function saveAllFromPDF(p) {
       fees: s.fees || {},
       totalReceived: parseFloat(s.totalReceived) || 0
     };
+    // Recalculate totalReceived from fees to ensure sort consistency
+    newShop.totalReceived = newShop.sales + newShop.returns + Object.values(newShop.fees).reduce((a,b)=>a+b,0);
     DB[p][curMonth].push(newShop);
     saved++;
   });

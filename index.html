@@ -5,6 +5,38 @@
 <title>Financial Dashboard V2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBe126_7rGGx-3WZfPnKfxsdLJ93VtwOWw",
+  authDomain: "financial-dashboard-e4ef0.firebaseapp.com",
+  databaseURL: "https://financial-dashboard-e4ef0-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "financial-dashboard-e4ef0",
+  storageBucket: "financial-dashboard-e4ef0.firebasestorage.app",
+  messagingSenderId: "216022308547",
+  appId: "1:216022308547:web:c4fdc0bbd889e20f813476"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window._fbSave = function(data) {
+  return set(ref(db, 'dashboard'), data);
+};
+
+window._fbListen = function(callback) {
+  onValue(ref(db, 'dashboard'), snap => {
+    callback(snap.exists() ? snap.val() : null);
+  });
+};
+
+window._fbReady = true;
+
+// notify main script firebase is ready
+window.dispatchEvent(new Event('fb-ready'));
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}body{background:#f5f5f8;color:#1a1a2e;font-family:'Noto Sans Thai',sans-serif;min-height:100vh}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.25);border-radius:3px}::-webkit-scrollbar-track{background:#f0f0f3}
@@ -79,6 +111,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <label>📅 เลือกเดือน:</label>
 <select class="msel" id="month-sel" onchange="swMonth(this.value)"></select>
 <button class="btn" id="new-month-btn" onclick="tgNewMonthBar()" style="background:#fff;border:2px dashed #bbb;color:#666;padding:8px 18px;font-size:13px">➕ เดือนใหม่</button>
+<span id="sync-status" style="font-size:11px;font-weight:600;color:#888;padding:4px 10px;background:#f0f0f3;border-radius:20px">⏳ กำลังโหลด...</span>
 </div>
 <div id="new-month-bar" style="display:none;justify-content:center;align-items:center;gap:8px;padding:8px 0 12px;flex-wrap:wrap;animation:fi 0.2s ease">
   <span style="font-size:12px;color:#555;font-weight:600">📅 เดือน/ปี (เช่น 04/2026):</span>
@@ -398,7 +431,7 @@ const returns=parseFloat(document.getElementById(p+"_fr").value)||0,tf=Object.va
 const newShop={id:Date.now(),name,storeId:document.getElementById(p+"_fsi").value.trim(),salesPerson:document.getElementById(p+"_fsp").value.trim(),sales,returns,fees,totalReceived:sales+returns+tf};
 if(!DB[p][curMonth])DB[p][curMonth]=[];DB[p][curMonth].push(newShop);
 ST[p].shops=DB[p][curMonth];
-[p+"_fn",p+"_fsi",p+"_fsp",p+"_fs",p+"_fr"].forEach(id=>document.getElementById(id).value="");tgForm(p);rAll(p)}
+[p+"_fn",p+"_fsi",p+"_fsp",p+"_fs",p+"_fr"].forEach(id=>document.getElementById(id).value="");tgForm(p);rAll(p);saveDB();}
 
 /* ══ NEW MONTH ══ */
 function tgNewMonthBar(){
@@ -440,6 +473,7 @@ function createNewMonth(){
   // create empty month
   DB.laz[key] = [];
   DB.sp[key] = [];
+  saveDB();
   buildMonthSel();
   const sel = document.getElementById('month-sel');
   sel.value = key;
@@ -459,8 +493,86 @@ function showMonthToast(msg, color){
   t._hide = setTimeout(()=>{ t.style.opacity='0'; }, 3000);
 }
 
+/* ══ FIREBASE SYNC ══ */
+let _fbInitDone = false;
+
+function saveDB() {
+  // Always save full DB to Firebase
+  const payload = { laz: {}, sp: {} };
+  ['laz','sp'].forEach(p => {
+    Object.entries(DB[p]).forEach(([month, shops]) => {
+      // Firebase keys can't have "/" — encode as "__"
+      const key = month.replace('/', '__');
+      payload[p][key] = shops;
+    });
+  });
+  if (window._fbSave) {
+    window._fbSave(payload).catch(e => console.warn('Firebase save error:', e));
+  }
+  // Also keep localStorage as offline fallback
+  try { localStorage.setItem('fin_db_backup', JSON.stringify(payload)); } catch(e) {}
+}
+
+function applyRemoteData(data) {
+  if (!data) return;
+  ['laz','sp'].forEach(p => {
+    if (!data[p]) return;
+    Object.entries(data[p]).forEach(([key, shops]) => {
+      const month = key.replace('__', '/');
+      DB[p][month] = shops;
+    });
+  });
+  buildMonthSel();
+  loadMonth(curMonth);
+}
+
+function showSyncStatus(text, color) {
+  let el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = color;
+}
+
 /* ══ INIT ══ */
-bFCB("laz");bFCB("sp");buildMonthSel();loadMonth(curMonth);
+bFCB("laz");bFCB("sp");
+
+// Show loading state
+showSyncStatus('⏳ กำลังโหลดข้อมูล...', '#888');
+
+// Load from localStorage backup immediately so UI isn't empty
+try {
+  const backup = localStorage.getItem('fin_db_backup');
+  if (backup) {
+    applyRemoteData(JSON.parse(backup));
+  } else {
+    buildMonthSel(); loadMonth(curMonth);
+  }
+} catch(e) { buildMonthSel(); loadMonth(curMonth); }
+
+// When Firebase is ready, start realtime listener
+function initFirebase() {
+  window._fbListen(data => {
+    if (data) {
+      applyRemoteData(data);
+      // Update backup
+      try { localStorage.setItem('fin_db_backup', JSON.stringify(data)); } catch(e) {}
+    }
+    if (!_fbInitDone) {
+      _fbInitDone = true;
+      showSyncStatus('🟢 Sync', '#059669');
+    }
+  });
+}
+
+if (window._fbReady) {
+  initFirebase();
+} else {
+  window.addEventListener('fb-ready', initFirebase);
+  // Timeout fallback
+  setTimeout(() => {
+    if (!_fbInitDone) showSyncStatus('🔴 Offline', '#dc2626');
+  }, 6000);
+}
 
 /* ══ PDF IMPORT via Claude AI ══ */
 let pdfParsedData = {laz: [], sp: []};
@@ -735,6 +847,7 @@ function saveAllFromPDF(p) {
   ST[p].shops = DB[p][curMonth];
   closePdfModal(p);
   rAll(p);
+  saveDB();
   alert(`✅ บันทึกสำเร็จ! เพิ่ม ${saved} ร้านเข้าแดชบอร์ด ${curMonth}`);
 }
 </script>

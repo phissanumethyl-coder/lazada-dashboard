@@ -347,7 +347,7 @@ function buildMonthSel(){const sel=document.getElementById("month-sel"),ms=getAl
 function loadMonth(m){curMonth=m;ST.laz.shops=DB.laz[m]||[];ST.sp.shops=DB.sp[m]||[];rAll("laz");rAll("sp")}
 function swMonth(m){loadMonth(m)}
 
-function gs(p){const s=ST[p];return[...s.shops].sort((a,b)=>{if(s.sort==="sales")return b.sales-a.sales;if(s.sort==="received")return b.totalReceived-a.totalReceived;return((b.sales-b.totalReceived)/b.sales)-((a.sales-a.totalReceived)/a.sales)})}
+function gs(p){const s=ST[p];const pct=x=>Math.abs(Object.values(x.fees).reduce((a,b)=>a+b,0)+(x.returns||0))/x.sales*100;return[...s.shops].sort((a,b)=>{if(s.sort==="sales")return b.sales-a.sales;if(s.sort==="received")return b.totalReceived-a.totalReceived;return pct(b)-pct(a)})}
 function gt(p){const sh=ST[p].shops,ts=sh.reduce((a,s)=>a+s.sales,0),tr=sh.reduce((a,s)=>a+s.totalReceived,0);return{ts,tr,td:ts-tr,pct:ts?((ts-tr)/ts)*100:0}}
 
 function rAll(p){

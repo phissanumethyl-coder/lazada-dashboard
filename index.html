@@ -44,6 +44,28 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 .ftr{margin-top:40px;padding:20px 0 40px;border-top:1px solid #e0e0e6;text-align:center;font-size:11px;color:#444}
 .nodata{text-align:center;padding:60px 20px;color:#999;font-size:15px}
 @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* PDF Import Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.op{display:flex;animation:fi 0.2s ease}
+.modal-box{background:#fff;border-radius:18px;padding:28px;width:min(700px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18)}
+.modal-box h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.modal-box p.sub{font-size:12px;color:#888;margin-bottom:16px}
+.pdf-textarea{width:100%;height:220px;padding:12px;border:1.5px solid #d0d0d8;border-radius:10px;font-size:12px;font-family:'JetBrains Mono',monospace;resize:vertical;outline:none;line-height:1.5;color:#333;background:#fafafa}
+.pdf-textarea:focus{border-color:#7c3aed;background:#fff}
+.pdf-textarea.sp-focus:focus{border-color:#ee4d2d}
+.ai-result-box{margin-top:16px;padding:14px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;font-size:12px;display:none}
+.ai-result-box.err{background:#fef2f2;border-color:#fca5a5}
+.ai-result-box.op{display:block;animation:fi 0.3s ease}
+.ai-loading{display:none;align-items:center;gap:10px;margin-top:14px;font-size:13px;color:#666}
+.ai-loading.op{display:flex}
+.spin{width:20px;height:20px;border:2.5px solid #e0e0e6;border-top-color:#7c3aed;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+.spin.sp{border-top-color:#ee4d2d}
+@keyframes spin{to{transform:rotate(360deg)}}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.preview-table th{padding:6px 10px;text-align:left;background:#f5f5f8;border-bottom:2px solid #e0e0e6;color:#555;font-weight:600}
+.preview-table td{padding:6px 10px;border-bottom:1px solid #f0f0f3;color:#333}
+.badge-ok{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:#dcfce7;color:#166534}
+.badge-warn{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:#fef9c3;color:#854d0e}
 </style>
 </head>
 <body>
@@ -56,12 +78,23 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <div class="mbar">
 <label>📅 เลือกเดือน:</label>
 <select class="msel" id="month-sel" onchange="swMonth(this.value)"></select>
+<button class="btn" id="new-month-btn" onclick="tgNewMonthBar()" style="background:#fff;border:2px dashed #bbb;color:#666;padding:8px 18px;font-size:13px">➕ เดือนใหม่</button>
+</div>
+<div id="new-month-bar" style="display:none;justify-content:center;align-items:center;gap:8px;padding:8px 0 12px;flex-wrap:wrap;animation:fi 0.2s ease">
+  <span style="font-size:12px;color:#555;font-weight:600">📅 เดือน/ปี (เช่น 04/2026):</span>
+  <input id="new-month-input" class="fi" style="width:130px;padding:7px 12px;text-align:center;font-size:14px;font-weight:600" placeholder="04/2026" maxlength="7"
+    oninput="fmtMonthInput(this)" onkeydown="if(event.key==='Enter')createNewMonth()">
+  <button class="btn" onclick="createNewMonth()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:8px 20px;font-size:13px">สร้างเดือน</button>
+  <button onclick="tgNewMonthBar()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;padding:0 4px">✕</button>
 </div>
 </div>
 
 <div class="ps act" id="sec-lazada">
 <div class="hdr"><div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#7c3aed,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">LAZADA</span><span style="font-size:24px;font-weight:300;color:#ccc">|</span><span style="font-size:19px;font-weight:600;color:#111">Financial Dashboard</span><span style="font-size:10px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.15);padding:2px 8px;border-radius:12px">V2</span></div><div style="font-size:12px;color:#888;margin-top:3px" id="laz-cnt"></div></div>
-<button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" id="laz-fbtn" onclick="tgForm('laz')">➕ เพิ่มร้านใหม่</button></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn" style="background:#fff;color:#7c3aed;border:2px solid #7c3aed" onclick="openPdfModal('laz')">📄 นำเข้าจาก PDF</button>
+<button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" id="laz-fbtn" onclick="tgForm('laz')">➕ เพิ่มร้านใหม่</button>
+</div></div>
 <div class="fm" id="laz-fm" style="border:1px solid rgba(124,58,237,0.2)"><h3 style="font-size:18px;font-weight:700;color:#7c3aed;margin-bottom:20px">➕ เพิ่มข้อมูลร้านใหม่ (Lazada)</h3>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อร้าน *</label><input class="fi" id="laz_fn"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">รหัสร้าน</label><input class="fi" id="laz_fsi"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ฝ่ายขาย</label><input class="fi" id="laz_fsp"></div></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ยอดขาย *</label><input class="fi" type="number" id="laz_fs"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">คืนสินค้า (ลบ)</label><input class="fi" type="number" id="laz_fr"></div></div>
@@ -76,7 +109,10 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 
 <div class="ps" id="sec-shopee">
 <div class="hdr"><div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#ff6633,#ee4d2d);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SHOPEE</span><span style="font-size:24px;font-weight:300;color:#ccc">|</span><span style="font-size:19px;font-weight:600;color:#111">Financial Dashboard</span><span style="font-size:10px;font-weight:700;color:#ee4d2d;background:rgba(238,77,45,0.15);padding:2px 8px;border-radius:12px">V2</span></div><div style="font-size:12px;color:#888;margin-top:3px" id="sp-cnt"></div></div>
-<button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" id="sp-fbtn" onclick="tgForm('sp')">➕ เพิ่มร้านใหม่</button></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn" style="background:#fff;color:#ee4d2d;border:2px solid #ee4d2d" onclick="openPdfModal('sp')">📄 นำเข้าจาก PDF</button>
+<button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" id="sp-fbtn" onclick="tgForm('sp')">➕ เพิ่มร้านใหม่</button>
+</div></div>
 <div class="fm" id="sp-fm" style="border:1px solid rgba(238,77,45,0.2)"><h3 style="font-size:18px;font-weight:700;color:#ff6633;margin-bottom:20px">➕ เพิ่มข้อมูลร้านใหม่ (Shopee)</h3>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อร้าน *</label><input class="fi" id="sp_fn"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ชื่อผู้ใช้</label><input class="fi" id="sp_fsi"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ฝ่ายขาย</label><input class="fi" id="sp_fsp"></div></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px"><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">รวมค่าสินค้า *</label><input class="fi" type="number" id="sp_fs"></div><div><label style="font-size:11px;color:#888;display:block;margin-bottom:3px">ส่วนลด (ลบ)</label><input class="fi" type="number" id="sp_fr"></div></div>
@@ -87,6 +123,56 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <div class="tc act" id="sp-ov"><div class="cg"><div class="cb"><h3>ยอดขาย vs ได้รับจริง</h3><div style="position:relative;height:380px"><canvas id="sp-bar"></canvas></div></div><div class="cb"><h3>สัดส่วนค่าใช้จ่าย</h3><div style="position:relative;height:380px"><canvas id="sp-pie"></canvas></div></div></div><div class="cb"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto" id="sp-rank"></div></div></div>
 <div class="tc" id="sp-dt"><div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center"><span style="color:#888;font-size:12px">เรียงตาม:</span><button class="bsm act" onclick="doSort('sp','sales',this)">ยอดขาย</button><button class="bsm" onclick="doSort('sp','received',this)">ได้รับจริง</button><button class="bsm" onclick="doSort('sp','pct',this)">% หักมากสุด</button></div><div id="sp-cards"></div></div>
 <div class="tc" id="sp-cp"><div class="cb" style="margin-bottom:16px"><h3>เปรียบเทียบ % ค่าใช้จ่าย</h3><div style="position:relative;height:520px"><canvas id="sp-cmp"></canvas></div></div><div class="cb"><h3>เปรียบเทียบตามประเภท</h3><div style="overflow-x:auto" id="sp-ctbl"></div></div></div>
+</div>
+
+<!-- PDF Import Modal: Lazada -->
+<div class="modal-overlay" id="pdfModal-laz">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <h2 style="color:#7c3aed">📄 นำเข้าข้อมูลจาก PDF (Lazada)</h2>
+      <button onclick="closePdfModal('laz')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;padding:0 4px">✕</button>
+    </div>
+    <p class="sub">คัดลอก text จาก Statement PDF ของ Lazada แล้ววางลงด้านล่าง — AI จะวิเคราะห์และกรอกข้อมูลให้อัตโนมัติ</p>
+    <textarea class="pdf-textarea" id="pdfText-laz" placeholder="วาง text จาก PDF Lazada ที่นี่...&#10;&#10;ตัวอย่าง:&#10;ชื่อร้าน: มีมี่&#10;รหัสร้าน: TH1JHSTHN9&#10;ยอดขาย: 234,031.66&#10;หักค่าธรรมเนียมการขายสินค้า: -26,784.35&#10;..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;flex:1;min-width:140px" onclick="analyzePDF('laz')">🤖 วิเคราะห์ด้วย AI</button>
+      <button class="btn" style="background:#e8e8ee;color:#444;flex:1;min-width:120px" onclick="closePdfModal('laz')">ยกเลิก</button>
+    </div>
+    <div class="ai-loading" id="aiLoading-laz"><div class="spin"></div><span>AI กำลังวิเคราะห์ข้อมูล...</span></div>
+    <div class="ai-result-box" id="aiResult-laz"></div>
+    <div id="aiPreview-laz"></div>
+    <div style="display:none" id="aiSaveRow-laz">
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#047857);color:#fff;flex:1" onclick="saveAllFromPDF('laz')">✅ บันทึกทั้งหมดเข้าแดชบอร์ด</button>
+        <button class="btn" style="background:#e8e8ee;color:#444" onclick="closePdfModal('laz')">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Import Modal: Shopee -->
+<div class="modal-overlay" id="pdfModal-sp">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <h2 style="color:#ee4d2d">📄 นำเข้าข้อมูลจาก PDF (Shopee)</h2>
+      <button onclick="closePdfModal('sp')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;padding:0 4px">✕</button>
+    </div>
+    <p class="sub">คัดลอก text จาก Statement PDF ของ Shopee แล้ววางลงด้านล่าง — AI จะวิเคราะห์และกรอกข้อมูลให้อัตโนมัติ</p>
+    <textarea class="pdf-textarea sp-focus" id="pdfText-sp" placeholder="วาง text จาก PDF Shopee ที่นี่...&#10;&#10;ตัวอย่าง:&#10;ชื่อร้าน: ทิว&#10;ชื่อผู้ใช้: meideacenter&#10;รวมค่าสินค้า: 248,137&#10;ค่าคอมมิชชั่น: -18,431&#10;..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff;flex:1;min-width:140px" onclick="analyzePDF('sp')">🤖 วิเคราะห์ด้วย AI</button>
+      <button class="btn" style="background:#e8e8ee;color:#444;flex:1;min-width:120px" onclick="closePdfModal('sp')">ยกเลิก</button>
+    </div>
+    <div class="ai-loading" id="aiLoading-sp"><div class="spin sp"></div><span>AI กำลังวิเคราะห์ข้อมูล...</span></div>
+    <div class="ai-result-box" id="aiResult-sp"></div>
+    <div id="aiPreview-sp"></div>
+    <div style="display:none" id="aiSaveRow-sp">
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn" style="background:linear-gradient(135deg,#059669,#047857);color:#fff;flex:1" onclick="saveAllFromPDF('sp')">✅ บันทึกทั้งหมดเข้าแดชบอร์ด</button>
+        <button class="btn" style="background:#e8e8ee;color:#444" onclick="closePdfModal('sp')">ปิด</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="ftr">Financial Dashboard V2 — Lazada & Shopee</div>
@@ -314,8 +400,235 @@ if(!DB[p][curMonth])DB[p][curMonth]=[];DB[p][curMonth].push(newShop);
 ST[p].shops=DB[p][curMonth];
 [p+"_fn",p+"_fsi",p+"_fsp",p+"_fs",p+"_fr"].forEach(id=>document.getElementById(id).value="");tgForm(p);rAll(p)}
 
+/* ══ NEW MONTH ══ */
+function tgNewMonthBar(){
+  const bar = document.getElementById('new-month-bar');
+  const showing = bar.style.display === 'flex';
+  bar.style.display = showing ? 'none' : 'flex';
+  if (!showing) {
+    const now = new Date();
+    const m = String(now.getMonth()+1).padStart(2,'0');
+    const y = now.getFullYear();
+    document.getElementById('new-month-input').value = m+'/'+y;
+    document.getElementById('new-month-input').focus();
+    document.getElementById('new-month-input').select();
+  }
+}
+
+function fmtMonthInput(el){
+  let v = el.value.replace(/[^0-9/]/g,'');
+  if(v.length===2 && !v.includes('/')) v += '/';
+  el.value = v;
+}
+
+function createNewMonth(){
+  const val = document.getElementById('new-month-input').value.trim();
+  const match = val.match(/^(0[1-9]|1[0-2])\/(\d{4})$/);
+  if(!match){ alert('รูปแบบไม่ถูกต้อง — กรุณาพิมพ์ เช่น 04/2026'); return; }
+  const [,m,y] = match;
+  const key = m+'/'+y;
+  const allMonths = getAllMonths();
+  if(allMonths.includes(key)){
+    // month exists — just switch to it
+    const sel = document.getElementById('month-sel');
+    sel.value = key;
+    swMonth(key);
+    tgNewMonthBar();
+    showMonthToast('📅 สลับไปเดือน '+fmtMonth(key)+' แล้ว', '#7c3aed');
+    return;
+  }
+  // create empty month
+  DB.laz[key] = [];
+  DB.sp[key] = [];
+  buildMonthSel();
+  const sel = document.getElementById('month-sel');
+  sel.value = key;
+  swMonth(key);
+  tgNewMonthBar();
+  showMonthToast('✅ สร้างเดือน '+fmtMonth(key)+' แล้ว — เพิ่มข้อมูลด้านล่างได้เลย!', '#059669');
+}
+
+function showMonthToast(msg, color){
+  let t = document.getElementById('month-toast');
+  if(!t){ t = document.createElement('div'); t.id='month-toast'; document.body.appendChild(t);
+    t.style.cssText='position:fixed;bottom:32px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;color:#fff;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.4s;pointer-events:none'; }
+  t.style.background = color;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(()=>{ t.style.opacity='0'; }, 3000);
+}
+
 /* ══ INIT ══ */
 bFCB("laz");bFCB("sp");buildMonthSel();loadMonth(curMonth);
+
+/* ══ PDF IMPORT via Claude AI ══ */
+let pdfParsedData = {laz: [], sp: []};
+
+function openPdfModal(p) {
+  document.getElementById('pdfModal-'+p).classList.add('op');
+  document.getElementById('pdfText-'+p).value = '';
+  document.getElementById('aiResult-'+p).className = 'ai-result-box';
+  document.getElementById('aiPreview-'+p).innerHTML = '';
+  document.getElementById('aiSaveRow-'+p).style.display = 'none';
+  document.getElementById('aiLoading-'+p).classList.remove('op');
+  pdfParsedData[p] = [];
+}
+
+function closePdfModal(p) {
+  document.getElementById('pdfModal-'+p).classList.remove('op');
+}
+
+async function analyzePDF(p) {
+  const text = document.getElementById('pdfText-'+p).value.trim();
+  if (!text) { alert('กรุณาวาง text จาก PDF ก่อน'); return; }
+
+  const loading = document.getElementById('aiLoading-'+p);
+  const result = document.getElementById('aiResult-'+p);
+  const preview = document.getElementById('aiPreview-'+p);
+  const saveRow = document.getElementById('aiSaveRow-'+p);
+
+  loading.classList.add('op');
+  result.className = 'ai-result-box';
+  preview.innerHTML = '';
+  saveRow.style.display = 'none';
+  pdfParsedData[p] = [];
+
+  const platform = p === 'laz' ? 'Lazada' : 'Shopee';
+  const feeKeys = p === 'laz'
+    ? Object.values(ST.laz.fg).flat()
+    : Object.values(ST.sp.fg).flat();
+
+  const prompt = `คุณเป็น AI ที่ช่วยวิเคราะห์ข้อมูล Statement จากแพลตฟอร์ม ${platform}
+ข้อมูลต่อไปนี้คือ text ที่คัดลอกมาจาก PDF Statement ของ ${platform}
+
+TEXT จาก PDF:
+---
+${text}
+---
+
+รายการค่าธรรมเนียมที่รู้จัก: ${feeKeys.join(', ')}
+
+กรุณาวิเคราะห์และดึงข้อมูลร้านค้าออกมาเป็น JSON array ตามรูปแบบนี้:
+[
+  {
+    "name": "ชื่อร้าน",
+    "storeId": "รหัสร้านหรือ username",
+    "salesPerson": "",
+    "sales": 0,
+    "returns": 0,
+    "fees": {
+      "ชื่อค่าธรรมเนียม": -จำนวนเงิน
+    },
+    "totalReceived": 0
+  }
+]
+
+กฎสำคัญ:
+- ค่าใช้จ่าย/ค่าธรรมเนียมต้องเป็นตัวเลขติดลบ (ยกเว้นรายการที่เป็นเงินคืนให้ร้าน)
+- sales และ totalReceived ต้องเป็นบวก
+- ถ้ามีหลายร้านในข้อมูล ให้แยกแต่ละร้านเป็น object ใน array
+- totalReceived = sales + returns + รวมทุก fees
+- ตอบเฉพาะ JSON เท่านั้น ไม่มีข้อความอื่น ไม่มี markdown code block`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    loading.classList.remove('op');
+
+    if (!response.ok || !data.content) {
+      result.className = 'ai-result-box err op';
+      result.innerHTML = '❌ เกิดข้อผิดพลาด: ' + (data.error?.message || 'ไม่สามารถเชื่อมต่อ AI ได้');
+      return;
+    }
+
+    const rawText = data.content.map(c => c.text || '').join('').trim();
+    let shops;
+    try {
+      shops = JSON.parse(rawText);
+      if (!Array.isArray(shops)) shops = [shops];
+    } catch(e) {
+      // try to extract JSON from text
+      const match = rawText.match(/\[[\s\S]+\]/);
+      if (match) {
+        shops = JSON.parse(match[0]);
+      } else {
+        throw new Error('ไม่สามารถแปลง JSON ได้');
+      }
+    }
+
+    pdfParsedData[p] = shops;
+
+    // Build preview table
+    const ac = ST[p].ac;
+    let tableHTML = `<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px">🔍 AI วิเคราะห์พบ ${shops.length} ร้าน:</div>
+<div style="overflow-x:auto"><table class="preview-table">
+<thead><tr><th>ร้านค้า</th><th>รหัสร้าน</th><th>ยอดขาย</th><th>รายการค่าใช้จ่าย</th><th>ได้รับจริง</th><th>สถานะ</th></tr></thead><tbody>`;
+
+    shops.forEach(s => {
+      const feesCount = Object.keys(s.fees||{}).length;
+      const ok = s.name && s.sales > 0;
+      tableHTML += `<tr>
+        <td><strong>${s.name||'-'}</strong></td>
+        <td style="font-family:monospace;font-size:11px">${s.storeId||'-'}</td>
+        <td style="text-align:right;font-family:monospace">฿${fmt(s.sales||0)}</td>
+        <td style="text-align:center">${feesCount} รายการ</td>
+        <td style="text-align:right;font-family:monospace;color:#059669">฿${fmt(s.totalReceived||0)}</td>
+        <td><span class="${ok?'badge-ok':'badge-warn'}">${ok?'✓ พร้อม':'⚠ ตรวจสอบ'}</span></td>
+      </tr>`;
+    });
+
+    tableHTML += '</tbody></table></div></div>';
+    preview.innerHTML = tableHTML;
+
+    result.className = 'ai-result-box op';
+    result.innerHTML = `✅ AI วิเคราะห์สำเร็จ! พบข้อมูล <strong>${shops.length}</strong> ร้าน กดปุ่มด้านล่างเพื่อบันทึกเข้าแดชบอร์ด`;
+    saveRow.style.display = 'block';
+
+  } catch(err) {
+    loading.classList.remove('op');
+    result.className = 'ai-result-box err op';
+    result.innerHTML = '❌ เกิดข้อผิดพลาด: ' + err.message;
+  }
+}
+
+function saveAllFromPDF(p) {
+  const shops = pdfParsedData[p];
+  if (!shops || !shops.length) { alert('ไม่มีข้อมูลที่จะบันทึก'); return; }
+
+  if (!DB[p][curMonth]) DB[p][curMonth] = [];
+
+  let saved = 0;
+  shops.forEach(s => {
+    if (!s.name) return;
+    const newShop = {
+      id: Date.now() + Math.random(),
+      name: s.name,
+      storeId: s.storeId || '',
+      salesPerson: s.salesPerson || '',
+      sales: parseFloat(s.sales) || 0,
+      returns: parseFloat(s.returns) || 0,
+      fees: s.fees || {},
+      totalReceived: parseFloat(s.totalReceived) || 0
+    };
+    DB[p][curMonth].push(newShop);
+    saved++;
+  });
+
+  ST[p].shops = DB[p][curMonth];
+  closePdfModal(p);
+  rAll(p);
+  alert(`✅ บันทึกสำเร็จ! เพิ่ม ${saved} ร้านเข้าแดชบอร์ด ${curMonth}`);
+}
 </script>
 </body>
 </html>

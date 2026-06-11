@@ -542,8 +542,17 @@ function applyRemoteData(data) {
   if (!data) return;
   ['laz','sp'].forEach(p => {
     if (!data[p]) return;
-    Object.entries(data[p]).forEach(([key, shops]) => {
+    Object.entries(data[p]).forEach(([key, val]) => {
       const month = key.replace('__', '/');
+      // Firebase stores arrays as objects {0:{...},1:{...}} — convert back to array
+      let shops;
+      if (Array.isArray(val)) {
+        shops = val.filter(Boolean); // remove null holes
+      } else if (val && typeof val === 'object') {
+        shops = Object.values(val).filter(s => s && typeof s === 'object');
+      } else {
+        shops = [];
+      }
       DB[p][month] = shops;
     });
   });
@@ -561,8 +570,8 @@ function showSyncStatus(text, color) {
 /* ══ INIT ══ */
 bFCB("laz");bFCB("sp");
 
-// Show loading state
-showSyncStatus('⏳ กำลังโหลดข้อมูล...', '#888');
+// Show connecting state
+showSyncStatus('🔄 กำลังเชื่อมต่อ...', '#888');
 
 // Load from localStorage backup immediately so UI isn't empty
 try {
@@ -595,8 +604,8 @@ if (window._fbReady) {
   window.addEventListener('fb-ready', initFirebase);
   // Timeout fallback
   setTimeout(() => {
-    if (!_fbInitDone) showSyncStatus('🔴 Offline', '#dc2626');
-  }, 6000);
+    if (!_fbInitDone) showSyncStatus('🔴 Offline — รีเฟรชหน้าใหม่', '#dc2626');
+  }, 15000);
 }
 
 /* ══ PDF IMPORT via Claude AI ══ */

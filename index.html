@@ -716,67 +716,97 @@ function extractLazadaBlock(block, name, storeId) {
   const fees = {};
   let sales = 0, returns = 0, totalReceived = 0;
 
-  const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-
-  // Known fee label → key mapping (handle slight spacing/newline variations)
-  const LAZ_FEE_LABELS = [
-    'หักค่าธรรมเนียมการขายสินค้า',
-    'ค่าธรรมเนียมการชำระเงิน',
-    'ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins',
-    'คืนค่าธรรมเนียมการชำระเงิน',
-    'คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins',
-    'คืนส่วนลดค่าธรรมเนียมการขายสินค้า',
-    'ส่วนต่างค่าจัดส่ง',
-    'ค่าขนส่งการคืนสินค้า',
-    'หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)',
-    'ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า',
-    'คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า',
-    'ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า',
-    'Campaign Fee',
-    'ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)',
-    'ส่วนลด LazCoins',
-    'Reversal Promotional Charges Flexi-Combo',
-    'Reverse - Premium Package',
-    'หักค่าคูปองส่งเสริมการขายจากผู้ขาย',
-    'คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า',
-    'ค่าบริการโปรโมทสินค้า',
-    'Premium Package',
-    'รางวัลรีวิวสำหรับผู้ซื้อ',
-    'คืนค่าบริการโปรโมทสินค้า',
+  // Lazada section headers / subtotals to SKIP
+  const LAZ_SUBTOTALS = [
+    'ค่าธรรมเนียมจากลาซาด้า',
+    'ค่าบริการขนส่ง',
+    'ค่าธรรมเนียมด้านการตลาด',
+    'ยอดรายการขาย',
+    'สรุปธุรกรรม',
+    'รายละเอียดธุรกรรม',
   ];
 
-  // Join lines into one string for easier matching
-  const fullText = lines.join('\n');
+  // Fee labels ordered longest-first to prevent shorter labels matching inside longer ones
+  const LAZ_FEE_LABELS = [
+    'หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)',
+    'คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า',
+    'คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า',
+    'ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)',
+    'คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins',
+    'ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins',
+    'Reversal Promotional Charges Flexi-Combo',
+    'คืนส่วนลดค่าธรรมเนียมการขายสินค้า',
+    'หักค่าธรรมเนียมการขายสินค้า',
+    'หักค่าคูปองส่งเสริมการขายจากผู้ขาย',
+    'ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า',
+    'คืนค่าบริการโปรโมทสินค้า',
+    'ค่าธรรมเนียมการชำระเงิน',
+    'คืนค่าธรรมเนียมการชำระเงิน',
+    'ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า',
+    'ค่าขนส่งการคืนสินค้า',
+    'ค่าบริการโปรโมทสินค้า',
+    'รางวัลรีวิวสำหรับผู้ซื้อ',
+    'Reverse - Premium Package',
+    'ส่วนต่างค่าจัดส่ง',
+    'คืนค่าสินค้า LazCoins',
+    'ส่วนลด LazCoins',
+    'Campaign Fee',
+    'Reversal Campaign Fee',
+    'Premium Package',
+    'คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)',
+  ];
 
-  // Extract sales
-  const salesM = fullText.match(/ยอดรวมค่าสินค้า\s+([\d,]+(?:\.\d+)?)/);
-  if (salesM) sales = parseNum(salesM[1]);
+  const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
 
-  // Extract returns (คืนสินค้า)
-  const retM = fullText.match(/หักเงินค่าสินค้า.*?\s+(-?[\d,]+(?:\.\d+)?)/);
-  if (retM) returns = parseNum(retM[1]);
-  if (returns > 0) returns = -returns; // ensure negative
+  for (const line of lines) {
+    // Match sales: "ยอดรวมค่าสินค้า 2,740.00" (may appear inline after "ยอดรายการขาย")
+    const salesM = line.match(/ยอดรวมค่าสินค้า\s+([\d,]+(?:\.\d+)?)$/);
+    if (salesM) { sales = parseNum(salesM[1]); continue; }
 
-  // Extract totalReceived
-  const totM = fullText.match(/รวมจำนวนเงิน\s+([\d,]+(?:\.\d+)?)/);
-  if (totM) totalReceived = parseNum(totM[1]);
+    // Match returns
+    const retM = line.match(/^หักเงินค่าสินค้า[^\d]*(-?[\d,]+(?:\.\d+)?)$/);
+    if (retM) { returns = parseNum(retM[1]); if (returns > 0) returns = -returns; continue; }
 
-  // Extract each fee line by scanning each label
-  LAZ_FEE_LABELS.forEach(label => {
-    // escape for regex
-    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '[\\s\\n]+');
-    const re = new RegExp(escaped + '[\\s\\n]+(-?[\\d,]+(?:\\.\\d+)?)');
-    const fm = fullText.match(re);
-    if (fm) {
-      fees[label] = parseNum(fm[1]);
+    // Match totalReceived — only first occurrence (not the detail table row total)
+    if (!totalReceived) {
+      const totM = line.match(/^รวมจำนวนเงิน\s+([\d,]+(?:\.\d+)?)$/);
+      if (totM) { totalReceived = parseNum(totM[1]); continue; }
     }
-  });
 
-  // If totalReceived not found, calculate
-  if (!totalReceived) {
-    const feeSum = Object.values(fees).reduce((a,b)=>a+b, 0);
-    totalReceived = sales + returns + feeSum;
+    // Section header prefixes (Lazada sometimes puts fee inline with section name)
+    const LAZ_SECTION_PREFIXES = [
+      'ค่าธรรมเนียมด้านการตลาด ',
+      'ค่าธรรมเนียมจากลาซาด้า ',
+      'ค่าบริการขนส่ง ',
+      'ยอดรายการขาย ',
+    ];
+
+    // If line starts with a section header but has a number, strip the prefix and try matching
+    let matchLine = line;
+    const hasNumber = /(-?[\d,]+(?:\.\d+)?)$/.test(line);
+    if (!hasNumber) {
+      // Pure section header with no number → skip
+      if (LAZ_SUBTOTALS.some(s => line.startsWith(s))) continue;
+    } else {
+      // Has number — strip section prefix if present so we can match the fee label
+      for (const prefix of LAZ_SECTION_PREFIXES) {
+        if (line.startsWith(prefix)) { matchLine = line.slice(prefix.length); break; }
+      }
+    }
+
+    // Match fee labels — exact prefix, number at end
+    for (const label of LAZ_FEE_LABELS) {
+      if (matchLine.startsWith(label)) {
+        const m = matchLine.match(/(-?[\d,]+(?:\.\d+)?)$/);
+        if (m) fees[label] = parseNum(m[1]);
+        break;
+      }
+    }
   }
+
+  // Recalculate from fees for consistency
+  const feeSum = Object.values(fees).reduce((a,b) => a+b, 0);
+  totalReceived = sales + returns + feeSum;
 
   return { id: Date.now()+Math.random(), name, storeId, salesPerson: '', sales, returns, fees, totalReceived };
 }

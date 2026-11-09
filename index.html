@@ -342,10 +342,11 @@ const ST={laz:{shops:[],sort:"sales",fg:LFG,ch:{},ac:"#7c3aed",open:new Set()},s
 function fmtMonth(k){const[m,y]=k.split("/");const be=parseInt(y)+543;return MONTHS[parseInt(m)-1]+" "+be}
 function getAllMonths(){const s=new Set();["laz","sp"].forEach(p=>{Object.keys(DB[p]||{}).forEach(k=>s.add(k))});return[...s].sort((a,b)=>{const[am,ay]=a.split("/").map(Number),[bm,by]=b.split("/").map(Number);return ay!==by?ay-by:am-bm})}
 
-function buildMonthSel(){const sel=document.getElementById("month-sel"),ms=getAllMonths();sel.innerHTML="";ms.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=fmtMonth(k);sel.appendChild(o)});sel.value=ms[ms.length-1];curMonth=sel.value}
+let _monthPicked=false; // true เมื่อผู้ใช้เลือกเดือนเอง — ไม่เด้งไปเดือนล่าสุดตอน sync
+function buildMonthSel(){const sel=document.getElementById("month-sel"),ms=getAllMonths();sel.innerHTML="";ms.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=fmtMonth(k);sel.appendChild(o)});curMonth=(_monthPicked&&ms.includes(curMonth))?curMonth:ms[ms.length-1];sel.value=curMonth}
 
 function loadMonth(m){curMonth=m;ST.laz.shops=DB.laz[m]||[];ST.sp.shops=DB.sp[m]||[];rAll("laz");rAll("sp")}
-function swMonth(m){loadMonth(m)}
+function swMonth(m){_monthPicked=true;loadMonth(m)}
 
 function gs(p){const s=ST[p];const pct=x=>Math.abs(Object.values(x.fees).reduce((a,b)=>a+b,0)+(x.returns||0))/x.sales*100;return[...s.shops].sort((a,b)=>{if(s.sort==="sales")return b.sales-a.sales;if(s.sort==="received")return b.totalReceived-a.totalReceived;return pct(b)-pct(a)})}
 function gt(p){const sh=ST[p].shops,ts=sh.reduce((a,s)=>a+s.sales,0),tr=sh.reduce((a,s)=>a+s.totalReceived,0);return{ts,tr,td:ts-tr,pct:ts?((ts-tr)/ts)*100:0}}
@@ -509,21 +510,41 @@ function recalcAllTotalReceived() {
   }
 }
 
+/* Firebase ห้ามใช้ . # $ / [ ] ใน key — ชื่อค่าธรรมเนียมบางตัวมี "/" จึงต้อง encode ก่อนบันทึก */
+const FB_KEY_ENC = {'%':'%25','.':'%2E','#':'%23','$':'%24','/':'%2F','[':'%5B',']':'%5D'};
+const fbEncKey = k => String(k).replace(/[%.#$\/\[\]]/g, c => FB_KEY_ENC[c]);
+const fbDecKey = k => String(k).replace(/%(25|2E|23|24|2F|5B|5D)/gi, m => decodeURIComponent(m));
+const mapFeeKeys = (shop, fn) => {
+  if (!shop || !shop.fees) return shop;
+  const fees = {};
+  Object.entries(shop.fees).forEach(([k, v]) => { fees[fn(k)] = v; });
+  return { ...shop, fees };
+};
+
 function saveDB() {
-  // Always save full DB to Firebase
   const payload = { laz: {}, sp: {} };
   ['laz','sp'].forEach(p => {
     Object.entries(DB[p]).forEach(([month, shops]) => {
-      // Firebase keys can't have "/" — encode as "__"
-      const key = month.replace('/', '__');
-      payload[p][key] = shops;
+      // เดือน "05/2026" → "05__2026"
+      payload[p][month.replace('/', '__')] = (shops || []).map(s => mapFeeKeys(s, fbEncKey));
     });
   });
-  if (window._fbSave) {
-    window._fbSave(payload).catch(e => console.warn('Firebase save error:', e));
-  }
-  // Also keep localStorage as offline fallback
+  // localStorage ก่อน — ให้มี backup เสมอแม้ Firebase จะ error
   try { localStorage.setItem('fin_db_backup', JSON.stringify(payload)); } catch(e) {}
+  if (!window._fbSave) {
+    showSyncStatus('🔴 ยังไม่ได้เชื่อม Firebase — บันทึกไว้ในเครื่องเท่านั้น', '#dc2626');
+    return;
+  }
+  showSyncStatus('💾 กำลังบันทึก...', '#d97706');
+  try {
+    window._fbSave(payload)
+      .then(() => showSyncStatus('🟢 บันทึกแล้ว', '#059669'))
+      .catch(e => { console.error('Firebase save error:', e); showSyncStatus('🔴 บันทึกไม่สำเร็จ', '#dc2626'); showMonthToast('❌ บันทึกขึ้น Firebase ไม่สำเร็จ: ' + e.message, '#dc2626'); });
+  } catch (e) {
+    console.error('Firebase save error:', e);
+    showSyncStatus('🔴 บันทึกไม่สำเร็จ', '#dc2626');
+    showMonthToast('❌ บันทึกขึ้น Firebase ไม่สำเร็จ: ' + e.message, '#dc2626');
+  }
 }
 
 function applyRemoteData(data) {
@@ -541,7 +562,7 @@ function applyRemoteData(data) {
       } else {
         shops = [];
       }
-      DB[p][month] = shops;
+      DB[p][month] = shops.map(s => mapFeeKeys(s, fbDecKey));
     });
   });
   buildMonthSel();

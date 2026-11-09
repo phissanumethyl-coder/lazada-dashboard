@@ -216,7 +216,7 @@ const fmt=n=>n.toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDi
 const fp=n=>n.toFixed(2)+"%";const pc=p=>p>30?"#dc2626":p>25?"#d97706":"#059669";const tn=(n,l=10)=>n.length>l?n.slice(0,l)+"…":n;
 
 const MONTHS=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-const LFG={"ค่าธรรมเนียมจากลาซาด้า":["หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า","Campaign Fee","Reversal Campaign Fee","Premium Package - claim charge","หักค่าธรรมเนียมการขายสินค้า (รายการปรับปรุงที่หักขาด/ต่ำเกินไป)"],"ค่าบริการขนส่ง":["ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า","หักเงินค่าคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"],"ค่าธรรมเนียมด้านการตลาด":["ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins","Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins","หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า","ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า","คืนค่าบริการโปรโมทสินค้า","รางวัลรีวิวสำหรับผู้ซื้อ","คืนค่าสินค้า LazCoins"],"ค่าเคลม":["Lost Item Claim"]};
+const LFG={"ค่าธรรมเนียมจากลาซาด้า":["หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า","Campaign Fee","Reversal Campaign Fee","Premium Package - claim charge","หักค่าธรรมเนียมการขายสินค้า (รายการปรับปรุงที่หักขาด/ต่ำเกินไป)","LazCoins Discount Participation Fee - claim charge","ค่าบริการ Affiliate จากโปรแกรมส่วนลด LazCoins"],"ค่าบริการขนส่ง":["ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า","หักเงินค่าคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"],"ค่าธรรมเนียมด้านการตลาด":["ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins","Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins","หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า","ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า","คืนค่าบริการโปรโมทสินค้า","รางวัลรีวิวสำหรับผู้ซื้อ","คืนค่าสินค้า LazCoins"],"ค่าเคลม":["Lost Item Claim"]};
 const SFG={"โค้ดส่วนลด/เงินสนับสนุน":["โค้ดส่วนลดที่ออกโดยผู้ขาย"],"ค่าจัดส่ง":["ค่าจัดส่งที่ชำระโดยผู้ซื้อ","ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง","ค่าจัดส่งสินค้าที่ออกโดย Shopee","ค่าจัดส่งสินค้าคืน"],"ค่าธรรมเนียม/ค่าบริการ":["ค่าคอมมิชชั่น","ค่าบริการ","ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม","ค่าธุรกรรมการชำระเงิน","ค่าคอมมิชชั่น AMS"]};
 
 /* ══════════════════════════════════════════
@@ -337,7 +337,7 @@ sp:{
 
 /* ══ STATE ══ */
 let curMonth="01/2026";
-const ST={laz:{shops:[],sort:"sales",fg:LFG,ch:{},ac:"#7c3aed",closed:new Set()},sp:{shops:[],sort:"sales",fg:SFG,ch:{},ac:"#ee4d2d",closed:new Set()}};
+const ST={laz:{shops:[],sort:"sales",fg:LFG,ch:{},ac:"#7c3aed",open:new Set()},sp:{shops:[],sort:"sales",fg:SFG,ch:{},ac:"#ee4d2d",open:new Set()}};
 
 function fmtMonth(k){const[m,y]=k.split("/");const be=parseInt(y)+543;return MONTHS[parseInt(m)-1]+" "+be}
 function getAllMonths(){const s=new Set();["laz","sp"].forEach(p=>{Object.keys(DB[p]||{}).forEach(k=>s.add(k))});return[...s].sort((a,b)=>{const[am,ay]=a.split("/").map(Number),[bm,by]=b.split("/").map(Number);return ay!==by?ay-by:am-bm})}
@@ -363,7 +363,7 @@ function rSumEmpty(p){document.getElementById(p+"-sum").innerHTML=[{l:"ยอด
 function rSum(p){const t=gt(p);document.getElementById(p+"-sum").innerHTML=[{l:"ยอดขายรวม",v:"฿"+fmt(t.ts),c:"#059669"},{l:"ได้รับจริงรวม",v:"฿"+fmt(t.tr),c:"#2563eb"},{l:"ค่าใช้จ่ายรวม",v:"฿"+fmt(t.td),c:"#dc2626"},{l:"% ถูกหักเฉลี่ย",v:fp(t.pct),c:"#d97706"}].map(c=>`<div class="sc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.c}">${c.v}</div></div>`).join("")}
 
 function rCards(p){const sorted=gs(p),fg=ST[p].fg,ac=ST[p].ac;let h="";
-sorted.forEach(s=>{const tf=Object.values(s.fees).reduce((a,b)=>a+b,0),td=tf+(s.returns||0),pd=Math.abs(td)/s.sales*100,pr=(s.totalReceived/s.sales)*100,isOp=!ST[p].closed.has(String(s.id));
+sorted.forEach(s=>{const tf=Object.values(s.fees).reduce((a,b)=>a+b,0),td=tf+(s.returns||0),pd=Math.abs(td)/s.sales*100,pr=(s.totalReceived/s.sales)*100,isOp=ST[p].open.has(String(s.id));
 h+=`<div class="sk"><div class="sh" onclick="tgShop('${p}',${s.id})"><div style="flex:1 1 180px;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700;color:#111">${s.name}</span><span style="font-size:10px;color:#888;background:#eeeef3;padding:2px 8px;border-radius:4px">${s.storeId}</span></div>${s.salesPerson?`<div style="font-size:11px;color:#999;margin-top:2px">ฝ่ายขาย: ${s.salesPerson}</div>`:""}</div><div style="text-align:right;min-width:120px"><div style="font-size:10px;color:#444">ยอดขาย</div><div class="mono" style="font-size:16px;font-weight:700;color:#059669">฿${fmt(s.sales)}</div></div><div style="text-align:right;min-width:110px"><div style="font-size:10px;color:#444">ได้รับจริง</div><div class="mono" style="font-size:16px;font-weight:700;color:#2563eb">฿${fmt(s.totalReceived)}</div></div><div style="text-align:right;min-width:65px"><div style="font-size:10px;color:#444">หัก %</div><div class="mono" style="font-size:16px;font-weight:700;color:${pc(pd)}">${fp(pd)}</div></div><span class="ar${isOp?" op":""}" id="${p}-ar-${s.id}">▼</span></div>`;
 h+=`<div class="sd${isOp?" op":""}" id="${p}-sd-${s.id}"><div style="padding-top:14px">`;
 if(s.returns) h+=`<div class="fr" style="color:#dc2626"><span>คืนสินค้า/ส่วนลด</span><span class="mono">฿${fmt(s.returns)} (${fp(Math.abs(s.returns)/s.sales*100)})</span></div>`;
@@ -401,8 +401,8 @@ if(t==="cp"&&ST[p].shops.length)rCmp(p)}
 
 function doSort(p,sort,btn){ST[p].sort=sort;btn.parentElement.querySelectorAll(".bsm").forEach(e=>e.classList.remove("act"));btn.classList.add("act");rCards(p)}
 function tgShop(p,id){const d=document.getElementById(p+"-sd-"+id),a=document.getElementById(p+"-ar-"+id),op=d.classList.toggle("op");a.classList.toggle("op",op);
-if(op)ST[p].closed.delete(String(id));else ST[p].closed.add(String(id))}
-function setAllShops(p,open){ST[p].closed=open?new Set():new Set(ST[p].shops.map(s=>String(s.id)));rCards(p)}
+if(op)ST[p].open.add(String(id));else ST[p].open.delete(String(id))}
+function setAllShops(p,open){ST[p].open=open?new Set(ST[p].shops.map(s=>String(s.id))):new Set();rCards(p)}
 
 function tgForm(p){const f=document.getElementById(p+"-fm"),b=document.getElementById(p+"-fbtn"),op=f.classList.contains("op");f.classList.toggle("op");
 b.textContent=op?"➕ เพิ่มร้านใหม่":"✕ ปิดฟอร์ม";b.style.background=op?(p==="laz"?"linear-gradient(135deg,#7c3aed,#6d28d9)":"linear-gradient(135deg,#ff6633,#ee4d2d)"):"rgba(239,68,68,0.1)";b.style.color=op?"#fff":"#dc2626"}
@@ -757,6 +757,8 @@ function extractLazadaBlock(block, name, storeId) {
     'หักค่าธรรมเนียมการขายสินค้า (รายการปรับปรุงที่หักขาด/ต่ำเกินไป)',
     'Premium Package - claim charge',
     'Lost Item Claim',
+    'LazCoins Discount Participation Fee - claim charge',
+    'ค่าบริการ Affiliate จากโปรแกรมส่วนลด LazCoins',
   ].sort((a, b) => b.length - a.length); // ยาวสุดก่อนเสมอ — กัน prefix match ผิด
 
   const lines = block.split('\n').map(l => l.trim()).filter(Boolean);

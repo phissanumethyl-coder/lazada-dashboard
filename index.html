@@ -51,7 +51,7 @@ window.dispatchEvent(new Event('fb-ready'));
 .msel:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
 .hdr{padding:20px 0 16px;border-bottom:1px solid #e0e0e6;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .btn{padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;transition:all 0.2s}
-.bsm{padding:8px 18px;font-size:12px;font-weight:600;border-radius:50px;border:2px solid #e0e0e8;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;background:#fff;color:#666;transition:all 0.18s}.bsm:hover{border-color:#a78bfa;color:#7c3aed;background:#f5f0ff}.bsm.act{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(124,58,237,0.35)}.sp .bsm.act{background:linear-gradient(135deg,#ff6633,#ee4d2d);box-shadow:0 2px 8px rgba(238,77,45,0.35)}
+.bsm{padding:8px 18px;font-size:12px;font-weight:600;border-radius:50px;border:2px solid #e0e0e8;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;background:#fff;color:#666;transition:all 0.18s}.bsm:hover{border-color:#a78bfa;color:#7c3aed;background:#f5f0ff}.bsm.act{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(124,58,237,0.35)}#sec-shopee .bsm.act{background:linear-gradient(135deg,#ff6633,#ee4d2d);box-shadow:0 2px 8px rgba(238,77,45,0.35)}
 .btab{padding:12px 28px;border-radius:50px;border:2px solid transparent;font-size:14px;font-weight:700;cursor:pointer;background:#e8e8ee;color:#888;font-family:'Noto Sans Thai',sans-serif;transition:all 0.2s;letter-spacing:0.01em}.btab:hover{background:#d8d8e8;color:#444;transform:translateY(-1px)}
 .sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
 .sc{background:#fff;border:1px solid #e0e0e6;border-radius:12px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
@@ -66,6 +66,7 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 .sd{padding:0 22px 20px;border-top:1px solid #e8e8ee;display:none}.sd.op{display:block;animation:fi 0.3s ease}
 .fr{display:flex;justify-content:space-between;padding:4px 0 4px 14px;font-size:12px;border-bottom:1px solid #f0f0f3}
 .ft{display:flex;justify-content:space-between;padding:5px 0 5px 14px;font-size:12px;font-weight:600}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:4px}.fgb{background:#fafafc;border:1px solid #efeff4;border-radius:10px;padding:8px 12px 6px}.fgb .fr,.fgb .ft{padding-left:0}.fgb .fr:last-of-type{border-bottom:none}.fgb .fr,.fgb .ft{gap:10px}.fgb .mono{white-space:nowrap;flex-shrink:0}
 .sb{margin-top:8px;padding:10px 14px;border-radius:10px;display:flex;justify-content:space-between;font-weight:700;font-size:14px}
 .fm{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;display:none;box-shadow:0 1px 4px rgba(0,0,0,0.04)}.fm.op{display:block;animation:fi 0.3s ease}
 .fi{width:100%;padding:9px 12px;background:#f8f8fb;border:1px solid #d0d0d8;border-radius:8px;color:#1a1a2e;font-size:13px;outline:none;font-family:'Noto Sans Thai',sans-serif}.fi:focus{border-color:#7c3aed;background:#fff}
@@ -135,9 +136,8 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <h4 style="font-size:14px;font-weight:600;color:#a78bfa;margin-bottom:10px">ค่าใช้จ่าย — ติ๊กเลือก</h4><div id="laz-fcb"></div>
 <div style="display:flex;gap:10px;margin-top:16px"><button class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" onclick="subForm('laz')">บันทึก</button><button class="btn" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)" onclick="tgForm('laz')">ยกเลิก</button></div></div>
 <div class="sg" id="laz-sum"></div>
-<div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;padding:6px;background:#f0f0f5;border-radius:60px;width:fit-content" id="laz-tabs"><button class="btab" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(124,58,237,0.4)" onclick="swTab('laz','ov',this)">📊 ภาพรวม</button><button class="btab" onclick="swTab('laz','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('laz','cp',this)">⚖️ เปรียบเทียบ</button></div>
-<div class="tc act" id="laz-ov"><div class="cg"><div class="cb"><h3>ยอดขาย vs ได้รับจริง</h3><div style="position:relative;height:380px"><canvas id="laz-bar"></canvas></div></div><div class="cb"><h3>สัดส่วนค่าใช้จ่าย</h3><div style="position:relative;height:380px"><canvas id="laz-pie"></canvas></div></div></div><div class="cb"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto" id="laz-rank"></div></div></div>
-<div class="tc" id="laz-dt"><div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#f8f7ff;border-radius:14px;border:1px solid #e8e4f8"><span style="color:#7c3aed;font-size:12px;font-weight:700;margin-right:4px">🔽 เรียงตาม</span><button class="bsm act" onclick="doSort('laz','sales',this)">💰 ยอดขาย</button><button class="bsm" onclick="doSort('laz','received',this)">✅ ได้รับจริง</button><button class="bsm" onclick="doSort('laz','pct',this)">📉 % หักมากสุด</button></div><div id="laz-cards"></div></div>
+<div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;padding:6px;background:#f0f0f5;border-radius:60px;width:fit-content" id="laz-tabs"><button class="btab" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(124,58,237,0.4)" onclick="swTab('laz','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('laz','cp',this)">⚖️ เปรียบเทียบ</button></div>
+<div class="tc act" id="laz-dt"><div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#f8f7ff;border-radius:14px;border:1px solid #e8e4f8"><span style="color:#7c3aed;font-size:12px;font-weight:700;margin-right:4px">🔽 เรียงตาม</span><button class="bsm act" onclick="doSort('laz','sales',this)">💰 ยอดขาย</button><button class="bsm" onclick="doSort('laz','received',this)">✅ ได้รับจริง</button><button class="bsm" onclick="doSort('laz','pct',this)">📉 % หักมากสุด</button><span style="margin-left:auto;display:flex;gap:6px"><button class="bsm" onclick="setAllShops('laz',true)">⊞ ขยายทั้งหมด</button><button class="bsm" onclick="setAllShops('laz',false)">⊟ ย่อทั้งหมด</button></span></div><div id="laz-cards"></div></div>
 <div class="tc" id="laz-cp"><div class="cb" style="margin-bottom:16px"><h3>เปรียบเทียบ % ค่าใช้จ่าย</h3><div style="position:relative;height:450px"><canvas id="laz-cmp"></canvas></div></div><div class="cb"><h3>เปรียบเทียบตามประเภท</h3><div style="overflow-x:auto" id="laz-ctbl"></div></div></div>
 </div>
 
@@ -153,9 +153,8 @@ td{padding:8px 10px;border-bottom:1px solid #f0f0f3}tr:nth-child(even){backgroun
 <h4 style="font-size:14px;font-weight:600;color:#ff6633;margin-bottom:10px">ค่าใช้จ่าย — ติ๊กเลือก</h4><div id="sp-fcb"></div>
 <div style="display:flex;gap:10px;margin-top:16px"><button class="btn" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff" onclick="subForm('sp')">บันทึก</button><button class="btn" style="background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1)" onclick="tgForm('sp')">ยกเลิก</button></div></div>
 <div class="sg" id="sp-sum"></div>
-<div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;padding:6px;background:#f0f0f5;border-radius:60px;width:fit-content" id="sp-tabs"><button class="btab" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(238,77,45,0.4)" onclick="swTab('sp','ov',this)">📊 ภาพรวม</button><button class="btab" onclick="swTab('sp','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('sp','cp',this)">⚖️ เปรียบเทียบ</button></div>
-<div class="tc act" id="sp-ov"><div class="cg"><div class="cb"><h3>ยอดขาย vs ได้รับจริง</h3><div style="position:relative;height:380px"><canvas id="sp-bar"></canvas></div></div><div class="cb"><h3>สัดส่วนค่าใช้จ่าย</h3><div style="position:relative;height:380px"><canvas id="sp-pie"></canvas></div></div></div><div class="cb"><h3>🏆 อันดับร้านค้า</h3><div style="overflow-x:auto" id="sp-rank"></div></div></div>
-<div class="tc" id="sp-dt"><div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#fff5f2;border-radius:14px;border:1px solid #fde0d8"><span style="color:#ee4d2d;font-size:12px;font-weight:700;margin-right:4px">🔽 เรียงตาม</span><button class="bsm act" onclick="doSort('sp','sales',this)">💰 ยอดขาย</button><button class="bsm" onclick="doSort('sp','received',this)">✅ ได้รับจริง</button><button class="bsm" onclick="doSort('sp','pct',this)">📉 % หักมากสุด</button></div><div id="sp-cards"></div></div>
+<div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;padding:6px;background:#f0f0f5;border-radius:60px;width:fit-content" id="sp-tabs"><button class="btab" style="background:linear-gradient(135deg,#ff6633,#ee4d2d);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(238,77,45,0.4)" onclick="swTab('sp','dt',this)">📋 รายละเอียด</button><button class="btab" onclick="swTab('sp','cp',this)">⚖️ เปรียบเทียบ</button></div>
+<div class="tc act" id="sp-dt"><div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#fff5f2;border-radius:14px;border:1px solid #fde0d8"><span style="color:#ee4d2d;font-size:12px;font-weight:700;margin-right:4px">🔽 เรียงตาม</span><button class="bsm act" onclick="doSort('sp','sales',this)">💰 ยอดขาย</button><button class="bsm" onclick="doSort('sp','received',this)">✅ ได้รับจริง</button><button class="bsm" onclick="doSort('sp','pct',this)">📉 % หักมากสุด</button><span style="margin-left:auto;display:flex;gap:6px"><button class="bsm" onclick="setAllShops('sp',true)">⊞ ขยายทั้งหมด</button><button class="bsm" onclick="setAllShops('sp',false)">⊟ ย่อทั้งหมด</button></span></div><div id="sp-cards"></div></div>
 <div class="tc" id="sp-cp"><div class="cb" style="margin-bottom:16px"><h3>เปรียบเทียบ % ค่าใช้จ่าย</h3><div style="position:relative;height:520px"><canvas id="sp-cmp"></canvas></div></div><div class="cb"><h3>เปรียบเทียบตามประเภท</h3><div style="overflow-x:auto" id="sp-ctbl"></div></div></div>
 </div>
 
@@ -217,7 +216,7 @@ const fmt=n=>n.toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDi
 const fp=n=>n.toFixed(2)+"%";const pc=p=>p>30?"#dc2626":p>25?"#d97706":"#059669";const tn=(n,l=10)=>n.length>l?n.slice(0,l)+"…":n;
 
 const MONTHS=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-const LFG={"ค่าธรรมเนียมจากลาซาด้า":["หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า","Campaign Fee","Reversal Campaign Fee"],"ค่าบริการขนส่ง":["ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า","หักเงินค่าคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"],"ค่าธรรมเนียมด้านการตลาด":["ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins","Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins","หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า","ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า"]};
+const LFG={"ค่าธรรมเนียมจากลาซาด้า":["หักค่าธรรมเนียมการขายสินค้า","ค่าธรรมเนียมการชำระเงิน","ค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนค่าธรรมเนียมการชำระเงิน","คืนค่าธรรมเนียมโปรแกรมส่วนลด LazCoins","คืนส่วนลดค่าธรรมเนียมการขายสินค้า","Campaign Fee","Reversal Campaign Fee","Premium Package - claim charge","หักค่าธรรมเนียมการขายสินค้า (รายการปรับปรุงที่หักขาด/ต่ำเกินไป)"],"ค่าบริการขนส่ง":["ส่วนต่างค่าจัดส่ง","ส่วนลดค่าขนส่ง จ่ายโดยร้านค้า","ค่าขนส่งการคืนสินค้า","หักเงินค่าคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","หักเงินคูปองส่วนลดค่าขนส่งจากลาซาด้า (ลูกค้าคืนสินค้า)","คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)"],"ค่าธรรมเนียมด้านการตลาด":["ค่าส่วนลดโปรโมชั่นยิ่งซื้อ ยิ่งลด (Flexi-Combo)","Premium Package","ส่วนลด LazCoins","Reversal Promotional Charges Flexi-Combo","Reverse - Premium Package","คืนค่าส่วนลด LazCoins","หักค่าคูปองส่งเสริมการขายจากผู้ขาย","คืนค่าโปรโมชั่นส่งเสริมการขายเนื่องจากการคืนสินค้า","ค่าโปรแกรมส่งฟรีพิเศษกับลาซาด้า","คืนค่าธรรมเนียมโปรแกรมส่งฟรีพิเศษกับลาซาด้า","ค่าบริการโปรโมทสินค้า","คืนค่าบริการโปรโมทสินค้า","รางวัลรีวิวสำหรับผู้ซื้อ","คืนค่าสินค้า LazCoins"],"ค่าเคลม":["Lost Item Claim"]};
 const SFG={"โค้ดส่วนลด/เงินสนับสนุน":["โค้ดส่วนลดที่ออกโดยผู้ขาย"],"ค่าจัดส่ง":["ค่าจัดส่งที่ชำระโดยผู้ซื้อ","ค่าจัดส่งตามจริง คิดโดยผู้ให้บริการขนส่ง","ค่าจัดส่งสินค้าที่ออกโดย Shopee","ค่าจัดส่งสินค้าคืน"],"ค่าธรรมเนียม/ค่าบริการ":["ค่าคอมมิชชั่น","ค่าบริการ","ค่าธรรมเนียมโครงสร้างพื้นฐานแพลตฟอร์ม","ค่าธุรกรรมการชำระเงิน","ค่าคอมมิชชั่น AMS"]};
 
 /* ══════════════════════════════════════════
@@ -338,7 +337,7 @@ sp:{
 
 /* ══ STATE ══ */
 let curMonth="01/2026";
-const ST={laz:{shops:[],sort:"sales",fg:LFG,ch:{},ac:"#7c3aed"},sp:{shops:[],sort:"sales",fg:SFG,ch:{},ac:"#ee4d2d"}};
+const ST={laz:{shops:[],sort:"sales",fg:LFG,ch:{},ac:"#7c3aed",closed:new Set()},sp:{shops:[],sort:"sales",fg:SFG,ch:{},ac:"#ee4d2d",closed:new Set()}};
 
 function fmtMonth(k){const[m,y]=k.split("/");const be=parseInt(y)+543;return MONTHS[parseInt(m)-1]+" "+be}
 function getAllMonths(){const s=new Set();["laz","sp"].forEach(p=>{Object.keys(DB[p]||{}).forEach(k=>s.add(k))});return[...s].sort((a,b)=>{const[am,ay]=a.split("/").map(Number),[bm,by]=b.split("/").map(Number);return ay!==by?ay-by:am-bm})}
@@ -355,27 +354,25 @@ function rAll(p){
 const s=ST[p];
 const cnt=document.getElementById(p+"-cnt");
 if(!s.shops.length){cnt.textContent="ไม่มีข้อมูลสำหรับเดือนนี้";rSumEmpty(p);
-["rank","cards","ctbl"].forEach(x=>document.getElementById(p+"-"+x).innerHTML='<div class="nodata">📭 ยังไม่มีข้อมูลเดือนนี้</div>');
+["cards","ctbl"].forEach(x=>document.getElementById(p+"-"+x).innerHTML='<div class="nodata">📭 ยังไม่มีข้อมูลเดือนนี้</div>');
 ["bar","pie","cmp"].forEach(x=>{if(s.ch[x])s.ch[x].destroy();s.ch[x]=null});return}
-cnt.textContent=`${fmtMonth(curMonth)} — ${s.shops.length} ร้าน`;rSum(p);rRank(p);rCards(p);rCTbl(p);rBar(p);rPie(p);rCmp(p)}
+cnt.textContent=`${fmtMonth(curMonth)} — ${s.shops.length} ร้าน`;rSum(p);rCards(p);rCTbl(p);rCmp(p)}
 
 function rSumEmpty(p){document.getElementById(p+"-sum").innerHTML=[{l:"ยอดขายรวม",v:"—",c:"#999"},{l:"ได้รับจริงรวม",v:"—",c:"#999"},{l:"ค่าใช้จ่ายรวม",v:"—",c:"#999"},{l:"% ถูกหักเฉลี่ย",v:"—",c:"#999"}].map(c=>`<div class="sc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.c}">${c.v}</div></div>`).join("")}
 
 function rSum(p){const t=gt(p);document.getElementById(p+"-sum").innerHTML=[{l:"ยอดขายรวม",v:"฿"+fmt(t.ts),c:"#059669"},{l:"ได้รับจริงรวม",v:"฿"+fmt(t.tr),c:"#2563eb"},{l:"ค่าใช้จ่ายรวม",v:"฿"+fmt(t.td),c:"#dc2626"},{l:"% ถูกหักเฉลี่ย",v:fp(t.pct),c:"#d97706"}].map(c=>`<div class="sc"><div class="lb">${c.l}</div><div class="vl" style="color:${c.c}">${c.v}</div></div>`).join("")}
 
-function rRank(p){const sorted=gs(p);let h='<table><thead><tr><th>#</th><th>ร้านค้า</th><th class="rt">ยอดขาย</th><th class="rt">ค่าใช้จ่าย</th><th class="rt">ได้รับจริง</th><th class="rt">% หัก</th><th class="rt">% ได้รับ</th></tr></thead><tbody>';
-sorted.forEach((s,i)=>{const d=s.sales-s.totalReceived,pd=(d/s.sales)*100,pr=(s.totalReceived/s.sales)*100;h+=`<tr><td style="color:#444">${i+1}</td><td style="font-weight:600;color:#111">${s.name}</td><td class="rt mono" style="color:#059669">฿${fmt(s.sales)}</td><td class="rt mono" style="color:#dc2626">฿${fmt(d)}</td><td class="rt mono" style="color:#2563eb">฿${fmt(s.totalReceived)}</td><td class="rt mono" style="color:${pc(pd)}">${fp(pd)}</td><td class="rt mono" style="color:#2563eb">${fp(pr)}</td></tr>`});
-document.getElementById(p+"-rank").innerHTML=h+"</tbody></table>"}
-
 function rCards(p){const sorted=gs(p),fg=ST[p].fg,ac=ST[p].ac;let h="";
-sorted.forEach(s=>{const tf=Object.values(s.fees).reduce((a,b)=>a+b,0),td=tf+(s.returns||0),pd=Math.abs(td)/s.sales*100,pr=(s.totalReceived/s.sales)*100;
-h+=`<div class="sk"><div class="sh" onclick="tgShop('${p}',${s.id})"><div style="flex:1 1 180px;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700;color:#111">${s.name}</span><span style="font-size:10px;color:#888;background:#eeeef3;padding:2px 8px;border-radius:4px">${s.storeId}</span></div>${s.salesPerson?`<div style="font-size:11px;color:#999;margin-top:2px">ฝ่ายขาย: ${s.salesPerson}</div>`:""}</div><div style="text-align:right;min-width:120px"><div style="font-size:10px;color:#444">ยอดขาย</div><div class="mono" style="font-size:16px;font-weight:700;color:#059669">฿${fmt(s.sales)}</div></div><div style="text-align:right;min-width:110px"><div style="font-size:10px;color:#444">ได้รับจริง</div><div class="mono" style="font-size:16px;font-weight:700;color:#2563eb">฿${fmt(s.totalReceived)}</div></div><div style="text-align:right;min-width:65px"><div style="font-size:10px;color:#444">หัก %</div><div class="mono" style="font-size:16px;font-weight:700;color:${pc(pd)}">${fp(pd)}</div></div><span class="ar" id="${p}-ar-${s.id}">▼</span></div>`;
-h+=`<div class="sd" id="${p}-sd-${s.id}"><div style="padding-top:14px">`;
+sorted.forEach(s=>{const tf=Object.values(s.fees).reduce((a,b)=>a+b,0),td=tf+(s.returns||0),pd=Math.abs(td)/s.sales*100,pr=(s.totalReceived/s.sales)*100,isOp=!ST[p].closed.has(String(s.id));
+h+=`<div class="sk"><div class="sh" onclick="tgShop('${p}',${s.id})"><div style="flex:1 1 180px;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700;color:#111">${s.name}</span><span style="font-size:10px;color:#888;background:#eeeef3;padding:2px 8px;border-radius:4px">${s.storeId}</span></div>${s.salesPerson?`<div style="font-size:11px;color:#999;margin-top:2px">ฝ่ายขาย: ${s.salesPerson}</div>`:""}</div><div style="text-align:right;min-width:120px"><div style="font-size:10px;color:#444">ยอดขาย</div><div class="mono" style="font-size:16px;font-weight:700;color:#059669">฿${fmt(s.sales)}</div></div><div style="text-align:right;min-width:110px"><div style="font-size:10px;color:#444">ได้รับจริง</div><div class="mono" style="font-size:16px;font-weight:700;color:#2563eb">฿${fmt(s.totalReceived)}</div></div><div style="text-align:right;min-width:65px"><div style="font-size:10px;color:#444">หัก %</div><div class="mono" style="font-size:16px;font-weight:700;color:${pc(pd)}">${fp(pd)}</div></div><span class="ar${isOp?" op":""}" id="${p}-ar-${s.id}">▼</span></div>`;
+h+=`<div class="sd${isOp?" op":""}" id="${p}-sd-${s.id}"><div style="padding-top:14px">`;
 if(s.returns) h+=`<div class="fr" style="color:#dc2626"><span>คืนสินค้า/ส่วนลด</span><span class="mono">฿${fmt(s.returns)} (${fp(Math.abs(s.returns)/s.sales*100)})</span></div>`;
+h+=`<div class="fgrid">`;
 Object.entries(fg).forEach(([gn,fks])=>{const items=fks.filter(k=>s.fees[k]!==undefined&&s.fees[k]!==0);if(!items.length) return;const gtt=items.reduce((a,k)=>a+s.fees[k],0);
-h+=`<div style="font-size:12px;font-weight:600;color:${ac};margin:10px 0 4px">${gn}</div>`;
+h+=`<div class="fgb"><div style="font-size:12px;font-weight:700;color:${ac};margin:2px 0 4px">${gn}</div>`;
 items.forEach(k=>{const v=s.fees[k];h+=`<div class="fr"><span style="color:#111">${k}</span><span class="mono" style="color:${v>=0?'#059669':'#dc2626'}">฿${fmt(v)} (${fp(Math.abs(v)/s.sales*100)})</span></div>`});
-h+=`<div class="ft" style="color:${gtt>=0?'#059669':'#d97706'}"><span>รวม ${gn}</span><span class="mono">฿${fmt(gtt)} (${fp(Math.abs(gtt)/s.sales*100)})</span></div>`});
+h+=`<div class="ft" style="color:${gtt>=0?'#059669':'#d97706'}"><span>รวม ${gn}</span><span class="mono">฿${fmt(gtt)} (${fp(Math.abs(gtt)/s.sales*100)})</span></div></div>`});
+h+=`</div>`;
 h+=`<div class="sb" style="background:rgba(99,102,241,0.08);margin-top:14px"><span style="color:#7c3aed">รวมค่าใช้จ่ายทั้งหมด</span><span class="mono" style="color:#dc2626">฿${fmt(Math.abs(td))} (${fp(pd)})</span></div><div class="sb" style="background:rgba(52,211,153,0.08)"><span style="color:#059669">เงินที่ได้รับจริง</span><span class="mono" style="color:#059669">฿${fmt(s.totalReceived)} (${fp(pr)})</span></div></div></div></div>`});
 document.getElementById(p+"-cards").innerHTML=h}
 
@@ -387,34 +384,25 @@ gNames.forEach(gn=>{const gp=Math.abs(fg[gn].reduce((a,k)=>a+(s.fees[k]||0),0))/
 const tp=(s.sales-s.totalReceived)/s.sales*100;h+=`<td class="rt mono" style="font-weight:700;color:${pc(tp)}">${fp(tp)}</td></tr>`});
 document.getElementById(p+"-ctbl").innerHTML=h+"</tbody></table>"}
 
-function rBar(p){const sorted=gs(p),s=ST[p];if(s.ch.bar)s.ch.bar.destroy();
-s.ch.bar=new Chart(document.getElementById(p+"-bar"),{type:"bar",data:{labels:sorted.map(s=>tn(s.name)),datasets:[{label:"ยอดขาย",data:sorted.map(s=>s.sales),backgroundColor:p==="laz"?"#059669":"#ff8a65",borderRadius:4},{label:"ได้รับจริง",data:sorted.map(s=>s.totalReceived),backgroundColor:"#2563eb",borderRadius:4}]},options:{plugins:{legend:{labels:{color:"#444",font:{size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ฿${fmt(c.raw)}`},backgroundColor:"#fff",titleColor:"#333",bodyColor:"#333",borderColor:"#e0e0e6",borderWidth:1}},scales:{x:{ticks:{color:"#444",font:{size:8},maxRotation:45},grid:{color:"rgba(0,0,0,0.06)"}},y:{ticks:{color:"#444",font:{size:10},callback:v=>(v/1000).toFixed(0)+"K"},grid:{color:"rgba(0,0,0,0.06)"}}}}})}
-
-function rPie(p){const s=ST[p],ct={};s.shops.forEach(sh=>{Object.entries(s.fg).forEach(([gn,fks])=>{ct[gn]=(ct[gn]||0)+fks.reduce((a,k)=>a+(sh.fees[k]||0),0)})});
-const data=Object.entries(ct).filter(([,v])=>v<0).map(([n,v])=>({name:n,value:Math.abs(v)})).sort((a,b)=>b.value-a.value);
-const cols=p==="laz"?["#047857","#9d174d","#7c3aed","#c2410c","#075985"]:["#ee4d2d","#b45309","#dc2626","#7c3aed","#0891b2"];
-if(s.ch.pie)s.ch.pie.destroy();s.ch.pie=new Chart(document.getElementById(p+"-pie"),{type:"doughnut",data:{labels:data.map(d=>d.name),datasets:[{data:data.map(d=>d.value),backgroundColor:cols,borderWidth:0,borderRadius:4}]},options:{cutout:"50%",plugins:{legend:{position:"bottom",labels:{color:"#444",font:{size:10},padding:12}},tooltip:{callbacks:{label:c=>`${c.label}: ฿${fmt(c.raw)}`},backgroundColor:"#fff",titleColor:"#333",bodyColor:"#333",borderColor:"#e0e0e6",borderWidth:1}}}})}
-
 function rCmp(p){const sorted=gs(p),s=ST[p],data=sorted.map(sh=>parseFloat(((sh.sales-sh.totalReceived)/sh.sales*100).toFixed(2)));
 const cols=data.map(v=>v>30?"#dc2626":v>25?"#d97706":"#059669");if(s.ch.cmp)s.ch.cmp.destroy();
 s.ch.cmp=new Chart(document.getElementById(p+"-cmp"),{type:"bar",data:{labels:sorted.map(sh=>tn(sh.name)),datasets:[{label:"% หัก",data,backgroundColor:cols,borderRadius:4}]},options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+"%"},backgroundColor:"#fff",titleColor:"#333",bodyColor:"#333",borderColor:"#e0e0e6",borderWidth:1}},scales:{x:{ticks:{color:"#444",font:{size:10},callback:v=>v+"%"},grid:{color:"rgba(0,0,0,0.06)"}},y:{ticks:{color:"#333",font:{size:10}},grid:{display:false}}}}})}
 
 function swPlat(pl){document.querySelectorAll(".ps").forEach(e=>e.classList.remove("act"));document.querySelectorAll(".pbtn").forEach(e=>{e.className="pbtn"});
 document.getElementById("sec-"+pl).classList.add("act");document.getElementById("btn-"+pl).classList.add(pl==="lazada"?"alaz":"asp");
-const p=pl==="lazada"?"laz":"sp";if(ST[p].shops.length){rBar(p);rPie(p);rCmp(p)}}
+const p=pl==="lazada"?"laz":"sp";if(ST[p].shops.length)rCmp(p)}
 
 function swTab(p,t,btn){const sec=p==="laz"?"lazada":"shopee";
 document.querySelectorAll(`#sec-${sec} .tc`).forEach(e=>e.classList.remove("act"));
 const isLaz=p==="laz";document.querySelectorAll(`#${p}-tabs .btab`).forEach(e=>{e.style.background="";e.style.color="#888";e.style.boxShadow="";e.style.borderColor="transparent"});
 document.getElementById(p+"-"+t).classList.add("act");
 const grad=p==="laz"?"linear-gradient(135deg,#7c3aed,#6d28d9)":"linear-gradient(135deg,#ff6633,#ee4d2d)";const sh=p==="laz"?"0 2px 10px rgba(124,58,237,0.4)":"0 2px 10px rgba(238,77,45,0.4)";btn.style.background=grad;btn.style.color="#fff";btn.style.boxShadow=sh;btn.style.borderColor="transparent";
-if(t==="ov"&&ST[p].shops.length){rBar(p);rPie(p)}if(t==="cp"&&ST[p].shops.length)rCmp(p)}
+if(t==="cp"&&ST[p].shops.length)rCmp(p)}
 
 function doSort(p,sort,btn){ST[p].sort=sort;btn.parentElement.querySelectorAll(".bsm").forEach(e=>e.classList.remove("act"));btn.classList.add("act");rCards(p)}
-function tgShop(p,id){const d=document.getElementById(p+"-sd-"+id),a=document.getElementById(p+"-ar-"+id),op=d.classList.contains("op");
-document.querySelectorAll(`#sec-${p==="laz"?"lazada":"shopee"} .sd`).forEach(e=>e.classList.remove("op"));
-document.querySelectorAll(`#sec-${p==="laz"?"lazada":"shopee"} .ar`).forEach(e=>e.classList.remove("op"));
-if(!op){d.classList.add("op");a.classList.add("op")}}
+function tgShop(p,id){const d=document.getElementById(p+"-sd-"+id),a=document.getElementById(p+"-ar-"+id),op=d.classList.toggle("op");a.classList.toggle("op",op);
+if(op)ST[p].closed.delete(String(id));else ST[p].closed.add(String(id))}
+function setAllShops(p,open){ST[p].closed=open?new Set():new Set(ST[p].shops.map(s=>String(s.id)));rCards(p)}
 
 function tgForm(p){const f=document.getElementById(p+"-fm"),b=document.getElementById(p+"-fbtn"),op=f.classList.contains("op");f.classList.toggle("op");
 b.textContent=op?"➕ เพิ่มร้านใหม่":"✕ ปิดฟอร์ม";b.style.background=op?(p==="laz"?"linear-gradient(135deg,#7c3aed,#6d28d9)":"linear-gradient(135deg,#ff6633,#ee4d2d)"):"rgba(239,68,68,0.1)";b.style.color=op?"#fff":"#dc2626"}
@@ -733,6 +721,7 @@ function extractLazadaBlock(block, name, storeId) {
     'ยอดรายการขาย',
     'สรุปธุรกรรม',
     'รายละเอียดธุรกรรม',
+    'ค่าเคลม',
   ];
 
   // Fee labels ordered longest-first to prevent shorter labels matching inside longer ones
@@ -765,7 +754,10 @@ function extractLazadaBlock(block, name, storeId) {
     'Reversal Campaign Fee',
     'Premium Package',
     'คืนค่าคูปองจัดส่งสินค้า (ออกโดยผู้ขาย)',
-  ];
+    'หักค่าธรรมเนียมการขายสินค้า (รายการปรับปรุงที่หักขาด/ต่ำเกินไป)',
+    'Premium Package - claim charge',
+    'Lost Item Claim',
+  ].sort((a, b) => b.length - a.length); // ยาวสุดก่อนเสมอ — กัน prefix match ผิด
 
   const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
 
@@ -790,6 +782,7 @@ function extractLazadaBlock(block, name, storeId) {
       'ค่าธรรมเนียมจากลาซาด้า ',
       'ค่าบริการขนส่ง ',
       'ยอดรายการขาย ',
+      'ค่าเคลม ',
     ];
 
     // If line starts with a section header but has a number, strip the prefix and try matching
@@ -809,7 +802,7 @@ function extractLazadaBlock(block, name, storeId) {
     for (const label of LAZ_FEE_LABELS) {
       if (matchLine.startsWith(label)) {
         const m = matchLine.match(/(-?[\d,]+(?:\.\d+)?)$/);
-        if (m) fees[label] = parseNum(m[1]);
+        if (m) fees[label] = Math.round(((fees[label] || 0) + parseNum(m[1])) * 100) / 100;
         break;
       }
     }
